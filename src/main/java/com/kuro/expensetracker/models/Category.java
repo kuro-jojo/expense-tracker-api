@@ -1,0 +1,37 @@
+package com.kuro.expensetracker.models;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+public class Category {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name="name", unique = true, nullable = false)
+    private String name;
+    private String description;
+    private Float threshold;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
+
+    public Category(String name) {
+        this.name = name;
+    }
+
+    public Category(String name, String description, Float threshold, List<Transaction> transactions) {
+        this.name = name;
+        this.description = description;
+        this.threshold = threshold;
+        this.transactions = transactions;
+    }
+}
