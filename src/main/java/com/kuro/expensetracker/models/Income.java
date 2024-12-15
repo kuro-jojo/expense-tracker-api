@@ -9,4 +9,8 @@ public class Income extends Transaction {
     public Income(String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
         super(title, description, amount, category, transactionDate, user);
     }
+
+    public Income(Long id, String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
+        super(id, title, description, amount, category, transactionDate, user);
+    }
 }

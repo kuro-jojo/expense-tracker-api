@@ -18,7 +18,7 @@ public class CategoryService implements ICategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public Category add(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException{
+    public Category add(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException {
         categoryRepository.findByName(request.getName()).ifPresent(
                 category -> {
                     throw new EntityAlreadyPresentException(Category.class, request.getName());
@@ -39,7 +39,7 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public Category update(CategoryRequest request, Long categoryId) throws EntityNotFoundException{
+    public Category update(CategoryRequest request, Long categoryId) throws EntityNotFoundException {
         return categoryRepository.findById(categoryId)
                 .map(existingCategory -> updateCategory(existingCategory, request))
                 .map(categoryRepository::save)
@@ -47,13 +47,21 @@ public class CategoryService implements ICategoryService {
     }
 
     private Category updateCategory(Category existingCategory, CategoryRequest request) throws InvalidValueException {
-        if (request.getThreshold() < 0) {
+        if (request.getThreshold() != null && request.getThreshold() < 0) {
             throw new InvalidValueException("Threshold must be greater than zero!");
         }
-        existingCategory.setName(request.getName());
-        existingCategory.setDescription(request.getDescription());
-        existingCategory.setThreshold(request.getThreshold());
-        existingCategory.setTransactions(request.getTransactions());
+        if (request.getName() != null) {
+            existingCategory.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            existingCategory.setDescription(request.getDescription());
+        }
+        if (request.getThreshold() != null) {
+            existingCategory.setThreshold(request.getThreshold());
+        }
+        if (request.getTransactions() != null) {
+            existingCategory.setTransactions(request.getTransactions());
+        }
 
         return existingCategory;
     }
@@ -69,8 +77,10 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public Optional<Category> getById(Long id) {
-        return categoryRepository.findById(id);
+    public Category getById(Long id) {
+        return categoryRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException(Category.class, id)
+        );
     }
 
     @Override

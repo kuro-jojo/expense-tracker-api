@@ -1,10 +1,8 @@
 package com.kuro.expensetracker.requests;
 
-import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.models.User;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -15,8 +13,9 @@ public class TransactionRequest {
     private String title;
     private String description;
     private LocalDate transactionDate;
+    @NotNull
     private Float amount;
-    private Category category;
+    private String category;
     private User user;
 
 

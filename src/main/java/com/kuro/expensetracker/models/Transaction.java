@@ -1,15 +1,16 @@
 package com.kuro.expensetracker.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -23,17 +24,30 @@ public class Transaction {
     @Column(nullable = false)
     protected LocalDate transactionDate;
     @Column(nullable = false)
+    @NotNull
     protected Float amount;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties("transactions")
     protected Category category;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     protected User user;
 
     public Transaction(String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
+        this.title = title;
+        this.description = description;
+        this.amount = amount;
+        this.category = category;
+        this.transactionDate = transactionDate;
+        this.user = user;
+    }
+
+    public Transaction(Long id, String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.amount = amount;

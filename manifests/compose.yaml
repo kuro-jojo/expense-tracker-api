@@ -3,7 +3,7 @@ services:
         container_name: 'guide-mysql'
         image: 'mysql:latest'
         environment:
-            - 'MYSQL_DATABASE=expense-tracker'
+            - 'MYSQL_DATABASE=expense_tracker'
             - 'MYSQL_PASSWORD=secret'
             - 'MYSQL_ROOT_PASSWORD=secret'
             - 'MYSQL_USER=kuro'

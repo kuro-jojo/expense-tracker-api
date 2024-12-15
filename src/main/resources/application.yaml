@@ -1,6 +1,6 @@
 spring:
     datasource:
-        url: jdbc:mysql://localhost:3306/expense-tracker
+        url: jdbc:mysql://localhost:3306/expense_tracker
         username: kuro
         password: secret
         driver-class-name: com.mysql.cj.jdbc.Driver

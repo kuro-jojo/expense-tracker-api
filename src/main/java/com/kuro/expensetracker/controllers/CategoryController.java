@@ -5,7 +5,7 @@ import com.kuro.expensetracker.exceptions.EntityNotFoundException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.requests.CategoryRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
-import com.kuro.expensetracker.services.category.CategoryService;
+import com.kuro.expensetracker.services.category.ICategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("${api.prefix}/categories")
 public class CategoryController {
-    private final CategoryService categoryService;
+    private final ICategoryService categoryService;
 
     @PostMapping()
     public ResponseEntity<ApiResponse> addCategory(@RequestBody CategoryRequest request) {
@@ -24,7 +24,7 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Category added successfully", category));
         } catch (EntityAlreadyPresentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(e.getMessage()));
-        } catch (InvalidValueException e){
+        } catch (InvalidValueException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(e.getMessage()));
         }
     }
@@ -38,11 +38,10 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getCategory(@PathVariable String id) {
         try {
-            return categoryService.getById(Long.valueOf(id)).map(
-                    category -> ResponseEntity.ok(new ApiResponse("Category found!", category))
-            ).orElse(
-                    ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Category with id #" + id + " not found!"))
-            );
+            var category = categoryService.getById(Long.valueOf(id));
+            return ResponseEntity.ok(new ApiResponse("Category found!", category));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Category with id #" + id + " not found!"));
         } catch (NumberFormatException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Invalid category id provided!"));
         }
@@ -53,11 +52,22 @@ public class CategoryController {
         try {
             categoryService.deleteById(Long.valueOf(id));
             return ResponseEntity.ok(new ApiResponse("Category with id #" + id + " deleted successfully!"));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Category with id #" + id + " not found!"));
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Invalid category id provided!"));
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse> updateCategory(@PathVariable String id, @RequestBody CategoryRequest request) {
+        try {
+            var category = categoryService.update(request, Long.valueOf(id));
+            return ResponseEntity.ok(new ApiResponse("Category with id #" + id + " updated successfully!", category));
         } catch (NumberFormatException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Invalid category id provided!"));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Category with id #" + id + " not found!"));
         }
     }
-
 }

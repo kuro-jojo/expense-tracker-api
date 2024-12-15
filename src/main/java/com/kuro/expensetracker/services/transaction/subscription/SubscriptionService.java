@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Optional;
 
 @Service
 public class SubscriptionService extends TransactionService implements ISubscriptionService {
@@ -26,9 +25,9 @@ public class SubscriptionService extends TransactionService implements ISubscrip
 
     @Override
     public Subscription add(SubscriptionRequest request) {
-        Category category = super.categoryRepository.findByName(request.getCategory().getName())
+        Category category = super.categoryRepository.findByName(request.getCategory())
                 .orElseGet(() -> {
-                    Category newCategory = new Category(request.getCategory().getName());
+                    Category newCategory = new Category(request.getCategory());
                     return categoryRepository.save(newCategory);
                 });
         // check the frequency
@@ -42,17 +41,15 @@ public class SubscriptionService extends TransactionService implements ISubscrip
         if (request.getDueDate().isBefore(LocalDate.now())) {
             request.setIsActive(false);
         }
-        request.setCategory(category);
-        subscriptionRepository.save(createTransaction(request));
-        return null;
+        return subscriptionRepository.save(createSubscription(request, category));
     }
 
-    private Subscription createTransaction(SubscriptionRequest request) {
+    private Subscription createSubscription(SubscriptionRequest request, Category category) {
         return new Subscription(
                 request.getTitle(),
                 request.getDescription(),
                 request.getAmount(),
-                request.getCategory(),
+                category,
                 request.getTransactionDate(),
                 request.getUser(),
                 request.getDueDate(),

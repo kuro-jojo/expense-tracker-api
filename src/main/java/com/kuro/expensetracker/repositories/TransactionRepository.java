@@ -18,4 +18,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByTransactionDateAfter(LocalDate date);
 
     List<Transaction> findByTransactionDateBetween(LocalDate minDate, LocalDate maxDate);
+
+    List<Transaction> findByTransactionDate(LocalDate date);
 }
