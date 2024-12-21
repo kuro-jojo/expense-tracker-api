@@ -2,11 +2,11 @@ spring:
     datasource:
         url: jdbc:mysql://localhost:3306/expense_tracker
         username: kuro
-        password: secret
+        password: passer
         driver-class-name: com.mysql.cj.jdbc.Driver
 
     jpa:
-#        database-platform: org.hibernate.dialect.MySQLDialect
+        #        database-platform: org.hibernate.dialect.MySQLDialect
         hibernate:
             ddl-auto: update
         show-sql: true
@@ -20,5 +20,11 @@ api:
     prefix: api/v1
 logging:
     level:
-#
+        #
         org.springframework.security: TRACE
+
+security:
+    jwt:
+        secret-key: 3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b
+        # 1h in millisecond
+        expiration-time: 3600000

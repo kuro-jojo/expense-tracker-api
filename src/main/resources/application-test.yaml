@@ -2,7 +2,7 @@ spring:
     datasource:
         url: jdbc:mysql://localhost:3307/expense_tracker_test
         username: kuro
-        password: secret
+        password: passer
         driver-class-name: com.mysql.cj.jdbc.Driver
 
     jpa:

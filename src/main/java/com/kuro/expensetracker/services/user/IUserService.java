@@ -6,7 +6,6 @@ import com.kuro.expensetracker.requests.UserRequest;
 import java.util.Optional;
 
 public interface IUserService {
-    User add(UserRequest user);
     Optional<User> getById(Long id);
     User update(UserRequest user);
     void deleteUserById(Long id);
