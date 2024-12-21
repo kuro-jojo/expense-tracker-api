@@ -10,10 +10,11 @@ import java.time.LocalDate;
 @Data
 public class TransactionRequest {
     private Long id;
+    @NotNull(message = "Must provide a title")
     private String title;
     private String description;
     private LocalDate transactionDate;
-    @NotNull
+    @NotNull(message = "Must provide an amount")
     private Float amount;
     private String category;
     private User user;

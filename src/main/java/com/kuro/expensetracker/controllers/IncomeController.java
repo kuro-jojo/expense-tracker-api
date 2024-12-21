@@ -1,6 +1,5 @@
 package com.kuro.expensetracker.controllers;
 
-import com.kuro.expensetracker.exceptions.EntityNotFoundException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Income;
 import com.kuro.expensetracker.models.Transaction;
@@ -28,15 +27,9 @@ public class IncomeController {
     // TODO : add validation
     public ResponseEntity<ApiResponse> addIncome(@RequestBody @Valid IncomeRequest request) {
         // TODO : replace by current user
-        try {
-            // TODO : retrieve the current user
-            request.setUser(new User(1L));
-            Income income = incomeService.add(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Income created successfully", income));
-
-        } catch (InvalidValueException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(e.getMessage()));
-        }
+        request.setUser(new User(1L));
+        Income income = incomeService.add(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Income created successfully", income));
     }
 
     @GetMapping("/{id}")
@@ -44,10 +37,8 @@ public class IncomeController {
         try {
             var income = incomeService.getById(Long.valueOf(id));
             return ResponseEntity.ok(new ApiResponse("Income found!", income));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Income with id #" + id + " not found!"));
         } catch (NumberFormatException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Invalid income id provided!"));
+            throw new InvalidValueException("Invalid income id provided!");
         }
 
     }
@@ -87,7 +78,7 @@ public class IncomeController {
             }
             return ResponseEntity.ok(new ApiResponse(incomes.isEmpty() ? "No incomes found!" : "Incomes found!", incomes, incomes.size()));
         } catch (DateTimeParseException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Invalid date format! Should be : YYYY-MM-DD"));
+            throw new InvalidValueException("Invalid date format! Should be : YYYY-MM-DD");
         }
     }
 
@@ -97,10 +88,8 @@ public class IncomeController {
             incomeService.deleteById(Long.valueOf(id));
             return ResponseEntity.ok(new ApiResponse("Income with id #" + id + " deleted successfully!"));
 
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Income with id #" + id + " not found!"));
         } catch (NumberFormatException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Invalid income id provided!"));
+            throw new InvalidValueException("Invalid income id provided!");
         }
     }
 

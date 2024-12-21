@@ -1,6 +1,7 @@
 package com.kuro.expensetracker.services.user;
 
 import com.kuro.expensetracker.auth.JwtService;
+import com.kuro.expensetracker.utils.PasswordValidator;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.repositories.UserRepository;
@@ -25,8 +26,12 @@ public class AuthenticationService {
     private final JwtService jwtService;
 
     public User register(UserRequest request) {
-        if (request.getName() == null || request.getEmail() == null || request.getPassword() == null) {
-            throw new InvalidValueException("Please enter a name, an email and a password");
+        if (request.getName() == null) {
+            throw new InvalidValueException("Must provide a name.");
+        }
+
+        if (!PasswordValidator.isPasswordValid(request.getPassword())) {
+            throw new InvalidValueException("Password must match : " + PasswordValidator.PASSWORD_REQUIREMENT);
         }
 
         return userRepository.save(new User(

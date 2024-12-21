@@ -6,11 +6,11 @@ public class EntityNotFoundException extends RuntimeException {
 
     }
 
-    public EntityNotFoundException(Object entity, Long id) {
-        super(entity.getClass().getName() + " with id #" + id + " not found!");
+    public EntityNotFoundException(Class<?> entity, Long id) {
+        super(entity.getName() + " with id #" + id + " not found!");
     }
 
-    public EntityNotFoundException(Object entity, String name) {
-        super(entity.getClass().getName() + " with name \"" + name + "\" not found!");
+    public EntityNotFoundException(Class<?> entity, String name) {
+        super(entity.getName() + " with name [" + name + "] not found!");
     }
 }

@@ -4,6 +4,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,6 +12,8 @@ import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -84,6 +87,46 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        logger.error("Constraint violated {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid request parameter");
+//        errorDetail.setProperty("message", exception.getMessage());
+        exception.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errorDetail.setProperty(fieldName, errorMessage);
+        });
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(EntityAlreadyPresentException.class)
+    public ProblemDetail handleEntityAlreadyPresentException(EntityAlreadyPresentException exception) {
+        logger.error(exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(InvalidValueException.class)
+    public ProblemDetail handleInvalidValueException(InvalidValueException exception) {
+        logger.error("Invalid value exception {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        logger.error("Got a data integrity violation exception: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        errorDetail.setProperty("message", "An unexpected error occurred");
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralException(Exception exception) {

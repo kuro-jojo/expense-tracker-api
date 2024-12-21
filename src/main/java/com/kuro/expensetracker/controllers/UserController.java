@@ -1,9 +1,11 @@
 package com.kuro.expensetracker.controllers;
 
-import com.kuro.expensetracker.exceptions.InvalidValueException;
+import com.kuro.expensetracker.exceptions.EntityAlreadyPresentException;
+import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.UserRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.user.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -20,24 +22,18 @@ public class UserController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@RequestBody UserRequest request) {
-        if (request.getEmail() == null || request.getEmail().isBlank()
-                || request.getPassword() == null || request.getPassword().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Please provide the email and the password"));
-        }
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserRequest request) {
         String token = authenticationService.authenticate(request);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Token ", token));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@RequestBody UserRequest request) {
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody UserRequest request) {
         try {
             var user = authenticationService.register(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("User registered successfully", user));
-        } catch (InvalidValueException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(e.getMessage()));
         } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse("Email already used! "));
+            throw new EntityAlreadyPresentException(User.class, request.getEmail());
         }
     }
 }
