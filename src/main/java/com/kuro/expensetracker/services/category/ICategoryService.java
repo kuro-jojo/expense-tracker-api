@@ -9,9 +9,9 @@ import com.kuro.expensetracker.requests.CategoryRequest;
 import java.util.List;
 
 public interface ICategoryService {
-    Category add(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException;
+    Category create(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException;
 
-    Category update(CategoryRequest request, Long categoryId);
+    Category update(CategoryRequest request, Long categoryId) throws EntityNotFoundException, InvalidValueException;
 
     void deleteById(Long id) throws EntityNotFoundException;
 

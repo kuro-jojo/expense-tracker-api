@@ -1,11 +1,11 @@
 package com.kuro.expensetracker.services.user;
 
 import com.kuro.expensetracker.auth.JwtService;
-import com.kuro.expensetracker.utils.PasswordValidator;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.repositories.UserRepository;
 import com.kuro.expensetracker.requests.UserRequest;
+import com.kuro.expensetracker.utils.PasswordValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,12 +19,13 @@ import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class AuthenticationService implements IAuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
+    @Override
     public User register(UserRequest request) {
         if (request.getName() == null) {
             throw new InvalidValueException("Must provide a name.");
@@ -43,6 +44,7 @@ public class AuthenticationService {
         ));
     }
 
+    @Override
     public String authenticate(UserRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(),

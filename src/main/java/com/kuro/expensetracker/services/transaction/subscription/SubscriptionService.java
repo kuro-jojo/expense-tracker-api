@@ -51,7 +51,7 @@ public class SubscriptionService extends TransactionService implements ISubscrip
                 request.getAmount(),
                 category,
                 request.getTransactionDate(),
-                request.getUser(),
+                request.getOwner(),
                 request.getDueDate(),
                 request.getFrequency(),
                 request.getIsActive()

@@ -1,11 +1,10 @@
 package com.kuro.expensetracker.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -18,5 +17,5 @@ public class PaymentMode {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private User owner;
 }

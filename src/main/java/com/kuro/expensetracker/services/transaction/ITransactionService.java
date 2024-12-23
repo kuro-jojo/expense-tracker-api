@@ -8,15 +8,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface ITransactionService {
-    Transaction add(TransactionRequest request);
+    Transaction create(TransactionRequest request);
 
     Transaction update(TransactionRequest request, Long transactionId);
 
-    void deleteById(Long id);
+    void deleteById(Long id) throws EntityNotFoundException;
 
     Transaction getById(Long id) throws EntityNotFoundException;
 
-    List<Transaction> getByUser(Long userId);
+    List<Transaction> getAll();
 
     List<Transaction> getByCategory(Long categoryId);
 

@@ -9,20 +9,26 @@ import com.kuro.expensetracker.repositories.TransactionRepository;
 import com.kuro.expensetracker.requests.ExpenseRequest;
 import com.kuro.expensetracker.requests.IncomeRequest;
 import com.kuro.expensetracker.requests.TransactionRequest;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+@Setter
 public class TransactionService implements ITransactionService {
     protected final TransactionRepository transactionRepository;
     protected final CategoryRepository categoryRepository;
+    protected Long ownerId;
+
+    public TransactionService(TransactionRepository transactionRepository, CategoryRepository categoryRepository) {
+        this.transactionRepository = transactionRepository;
+        this.categoryRepository = categoryRepository;
+    }
 
     @Override
-    public Transaction add(TransactionRequest request) throws InvalidValueException {
+    public Transaction create(TransactionRequest request) throws InvalidValueException {
         if (request.getAmount() == null) {
             throw new InvalidValueException("Amount cannot be empty!");
         }
@@ -35,16 +41,16 @@ public class TransactionService implements ITransactionService {
 
         Category category = null;
         if (request.getCategory() != null && !request.getCategory().isBlank()) {
-            category = categoryRepository.findByName(request.getCategory())
+            category = categoryRepository.findByNameAndOwnerId(request.getCategory(), request.getOwner().getId())
                     .orElseGet(() -> {
-                        Category newCategory = new Category(request.getCategory());
+                        Category newCategory = new Category(request.getCategory(), request.getOwner());
                         return categoryRepository.save(newCategory);
                     });
         }
         if (request.getTransactionDate() == null) {
             request.setTransactionDate(LocalDate.now());
         }
-        return transactionRepository.save(createTransaction(request, category));
+        return createTransaction(request, category);
     }
 
     private Transaction createTransaction(TransactionRequest request, Category category) {
@@ -54,14 +60,14 @@ public class TransactionService implements ITransactionService {
                 request.getAmount(),
                 category,
                 request.getTransactionDate(),
-                request.getUser()
+                request.getOwner()
         );
     }
 
     @Override
     public Transaction update(TransactionRequest request, Long transactionId) throws EntityNotFoundException {
 
-        return transactionRepository.findById(transactionId)
+        return transactionRepository.findByIdAndOwnerId(transactionId, request.getOwner().getId())
                 .map(existingTransaction -> updateTransaction(existingTransaction, request))
                 .map(transactionRepository::save)
                 .orElseThrow(() -> new EntityNotFoundException(Transaction.class, transactionId));
@@ -73,7 +79,7 @@ public class TransactionService implements ITransactionService {
         existingTransaction.setTransactionDate(request.getTransactionDate());
         existingTransaction.setAmount(request.getAmount());
 
-        categoryRepository.findByName(request.getCategory()).ifPresentOrElse(
+        categoryRepository.findByNameAndOwnerId(request.getCategory(), request.getOwner().getId()).ifPresentOrElse(
                 existingTransaction::setCategory,
                 () -> {
                     throw new EntityNotFoundException(Category.class, request.getCategory());
@@ -84,7 +90,7 @@ public class TransactionService implements ITransactionService {
 
     @Override
     public void deleteById(Long id) throws EntityNotFoundException {
-        transactionRepository.findById(id)
+        transactionRepository.findByIdAndOwnerId(id, ownerId)
                 .ifPresentOrElse(transactionRepository::delete,
                         () -> {
                             throw new EntityNotFoundException(Transaction.class, id);
@@ -93,13 +99,13 @@ public class TransactionService implements ITransactionService {
 
     @Override
     public Transaction getById(Long id) throws EntityNotFoundException {
-        return transactionRepository.findById(id)
+        return transactionRepository.findByIdAndOwnerId(id, ownerId)
                 .orElseThrow(() -> new EntityNotFoundException(Transaction.class, id));
     }
 
     @Override
-    public List<Transaction> getByUser(Long userId) {
-        return transactionRepository.findByUserId(userId);
+    public List<Transaction> getAll() {
+        return transactionRepository.findByOwnerId(ownerId);
     }
 
     @Override

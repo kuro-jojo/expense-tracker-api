@@ -21,16 +21,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String apiPrefix;
 
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
-                                   HandlerExceptionResolver handlerExceptionResolver) {
+    public JwtAuthenticationFilter(
+            AuthenticationManager authenticationManager,
+            HandlerExceptionResolver handlerExceptionResolver) {
         this.authenticationManager = authenticationManager;
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         if (isPublicEndpoint(request)) {
             filterChain.doFilter(request, response);

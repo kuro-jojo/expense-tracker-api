@@ -1,12 +1,17 @@
 package com.kuro.expensetracker.models;
 
 import com.kuro.expensetracker.enums.Frequency;
-import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 @Entity
+@DiscriminatorValue("subs")
 public class Subscription extends Transaction {
     private LocalDate dueDate;
     private Frequency frequency;

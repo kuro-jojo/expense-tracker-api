@@ -7,18 +7,21 @@ import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.repositories.CategoryRepository;
 import com.kuro.expensetracker.requests.CategoryRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
+@Setter
 @RequiredArgsConstructor
+@Service
 public class CategoryService implements ICategoryService {
     private final CategoryRepository categoryRepository;
+    private Long ownerId;
 
     @Override
-    public Category add(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException {
-        categoryRepository.findByName(request.getName()).ifPresent(
+    public Category create(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException {
+        categoryRepository.findByNameAndOwnerId(request.getName(), request.getOwner().getId()).ifPresent(
                 category -> {
                     throw new EntityAlreadyPresentException(Category.class, request.getName());
                 }
@@ -33,13 +36,14 @@ public class CategoryService implements ICategoryService {
                         request.getName(),
                         request.getDescription(),
                         request.getThreshold(),
-                        request.getTransactions()
+                        request.getTransactions(),
+                        request.getOwner()
                 ));
     }
 
     @Override
-    public Category update(CategoryRequest request, Long categoryId) throws EntityNotFoundException {
-        return categoryRepository.findById(categoryId)
+    public Category update(CategoryRequest request, Long categoryId) throws EntityNotFoundException, InvalidValueException {
+        return categoryRepository.findByIdAndOwnerId(categoryId, request.getOwner().getId())
                 .map(existingCategory -> updateCategory(existingCategory, request))
                 .map(categoryRepository::save)
                 .orElseThrow(() -> new EntityNotFoundException(Category.class, categoryId));
@@ -67,7 +71,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void deleteById(Long id) throws EntityNotFoundException {
-        categoryRepository.findById(id)
+        categoryRepository.findByIdAndOwnerId(id, ownerId)
                 .ifPresentOrElse(categoryRepository::delete,
                         () -> {
                             throw new EntityNotFoundException(Category.class, id);
@@ -77,13 +81,13 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public Category getById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(
+        return categoryRepository.findByIdAndOwnerId(id, ownerId).orElseThrow(
                 () -> new EntityNotFoundException(Category.class, id)
         );
     }
 
     @Override
     public List<Category> getAll() {
-        return categoryRepository.findAll();
+        return categoryRepository.findByOwnerId(ownerId);
     }
 }

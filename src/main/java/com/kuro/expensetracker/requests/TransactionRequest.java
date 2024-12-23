@@ -17,7 +17,5 @@ public class TransactionRequest {
     @NotNull(message = "Must provide an amount")
     private Float amount;
     private String category;
-    private User user;
-
-
+    private User owner;
 }

@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -24,19 +25,18 @@ public class IncomeController {
     private final IncomeService incomeService;
 
     @PostMapping()
-    // TODO : add validation
-    public ResponseEntity<ApiResponse> addIncome(@RequestBody @Valid IncomeRequest request) {
-        // TODO : replace by current user
-        request.setUser(new User(1L));
-        Income income = incomeService.add(request);
+    public ResponseEntity<ApiResponse> createIncome(@RequestBody @Valid IncomeRequest request, @AuthenticationPrincipal User user) {
+        request.setOwner(user);
+        Income income = incomeService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Income created successfully", income));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse> getIncome(@PathVariable String id) {
+    public ResponseEntity<ApiResponse> getIncomeById(@PathVariable String id, @AuthenticationPrincipal User user) {
         try {
+            incomeService.setOwnerId(user.getId());
             var income = incomeService.getById(Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse("Income found!", income));
+            return ResponseEntity.ok(new ApiResponse(income));
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid income id provided!");
         }
@@ -44,12 +44,17 @@ public class IncomeController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ApiResponse> getIncomesBy(@RequestParam(required = false) String field, @RequestParam(required = false) String value, @RequestParam(required = false) String value2) {
+    public ResponseEntity<ApiResponse> getIncomesByField(
+            @RequestParam(required = false) String field,
+            @RequestParam(required = false) String value,
+            @RequestParam(required = false) String value2,
+            @AuthenticationPrincipal User user) {
         try {
+            incomeService.setOwnerId(user.getId());
+
             List<Transaction> incomes;
             if (field == null) {
-                // TODO : retrieve the current user
-                incomes = incomeService.getByUser(1L);
+                incomes = incomeService.getAll();
             } else {
                 switch (field) {
                     case "category": // assume it is the category name
@@ -72,21 +77,23 @@ public class IncomeController {
                         }
                         break;
                     default:
-                        // TODO : retrieve the current user
-                        incomes = incomeService.getByUser(1L);
+                        incomes = incomeService.getAll();
                 }
             }
-            return ResponseEntity.ok(new ApiResponse(incomes.isEmpty() ? "No incomes found!" : "Incomes found!", incomes, incomes.size()));
+            return ResponseEntity.ok(new ApiResponse(incomes, incomes.size()));
         } catch (DateTimeParseException e) {
-            throw new InvalidValueException("Invalid date format! Should be : YYYY-MM-DD");
+            throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteIncome(@PathVariable String id) {
+    public ResponseEntity<ApiResponse> deleteIncomeById(
+            @PathVariable String id,
+            @AuthenticationPrincipal User user) {
         try {
+            incomeService.setOwnerId(user.getId());
             incomeService.deleteById(Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse("Income with id #" + id + " deleted successfully!"));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid income id provided!");

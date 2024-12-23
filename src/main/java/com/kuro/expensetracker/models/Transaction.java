@@ -5,15 +5,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "transaction_type")
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,28 +36,28 @@ public class Transaction {
     @JsonIgnoreProperties("transactions")
     protected Category category;
 
-    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    protected User user;
+    @JoinColumn(name = "owner_id", nullable = false)
+    @JsonIgnore
+    protected User owner;
 
-    public Transaction(String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
+    public Transaction(String title, String description, Float amount, Category category, LocalDate transactionDate, User owner) {
         this.title = title;
         this.description = description;
         this.amount = amount;
         this.category = category;
         this.transactionDate = transactionDate;
-        this.user = user;
+        this.owner = owner;
     }
 
-    public Transaction(Long id, String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
+    public Transaction(Long id, String title, String description, Float amount, Category category, LocalDate transactionDate, User owner) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.amount = amount;
         this.category = category;
         this.transactionDate = transactionDate;
-        this.user = user;
+        this.owner = owner;
     }
 
 }

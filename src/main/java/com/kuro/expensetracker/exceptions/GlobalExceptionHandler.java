@@ -110,6 +110,15 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ProblemDetail handleEntityNotFoundException(EntityNotFoundException exception) {
+        logger.error(exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
     @ExceptionHandler(InvalidValueException.class)
     public ProblemDetail handleInvalidValueException(InvalidValueException exception) {
         logger.error("Invalid value exception {}", exception.getMessage());
