@@ -15,7 +15,7 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
 
     @Override
-    public Optional<User> getById(Long id) {
+    public Optional<User> getById(Long id) throws UserNotFoundException{
         return Optional.ofNullable(userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not find!")));
     }

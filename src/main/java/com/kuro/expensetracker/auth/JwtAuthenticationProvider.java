@@ -31,7 +31,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         if (token == null) {
             throw new BadCredentialsException("Invalid JWT token");
         }
-        if (!jwtService.isTokenValid(token)) {
+        if (jwtService.isTokenExpired(token)) {
             throw new CredentialsExpiredException("Token expired!");
         }
 

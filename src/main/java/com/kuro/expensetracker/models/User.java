@@ -5,10 +5,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.type.YesNoConverter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Currency;
 import java.util.List;
@@ -32,7 +33,10 @@ public class User implements UserDetails {
     @JsonIgnore
     private String password;
     @Column(nullable = false)
-    private LocalDate joinedAt;
+    @Convert(converter = YesNoConverter.class)
+    private Boolean isVerified;
+    @Column(nullable = false)
+    private LocalDateTime joinedAt;
     private Currency currency;
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -51,12 +55,13 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    public User(String name, String email, String password, LocalDate joinedAt, Currency currency) {
+    public User(String name, String email, String password, LocalDateTime joinedAt, Currency currency) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.joinedAt = joinedAt;
         this.currency = currency;
+        this.isVerified = false;
     }
 
     @PrePersist
@@ -65,32 +70,43 @@ public class User implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return uuid;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("User %s with email : %s. \n Account verified = %b. \n Joined at : %tF.", name, email, isVerified, joinedAt);
     }
 }

@@ -29,8 +29,8 @@ public class JwtService {
     }
 
 
-    public boolean isTokenValid(String token) throws JwtException, IllegalArgumentException {
-        return extractExpiration(token).after(new Date());
+    public boolean isTokenExpired(String token) throws JwtException, IllegalArgumentException {
+        return extractExpiration(token).before(new Date());
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) throws JwtException, IllegalArgumentException {

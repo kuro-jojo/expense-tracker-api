@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,7 +27,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentialsException(BadCredentialsException exception) {
-        logger.error("Authentication failed: {}", exception.getMessage());
+        logger.error("[BadCredentialsException] Authentication failed: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -35,7 +36,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ProblemDetail handleUserNotFoundException(UsernameNotFoundException exception) {
-        logger.error("Authentication failed: {}", exception.getMessage());
+        logger.error("[UsernameNotFoundException] Authentication failed: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -44,7 +45,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CredentialsExpiredException.class)
     public ProblemDetail handleCredentialsExpiredException(CredentialsExpiredException exception) {
-        logger.error("Authentication failed: {}", exception.getMessage());
+        logger.error("[CredentialsExpiredException] Authentication failed: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -53,7 +54,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MalformedJwtException.class)
     public ProblemDetail handleJwtExceptions(MalformedJwtException exception) {
-        logger.error("Authentication failed: {}", exception.getMessage());
+        logger.error("[MalformedJwtException] Authentication failed : {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", String.format("Error while parsing the jwt token: %s", exception.getMessage()));
         errorDetail.setProperty("timestamp", Instant.now());
@@ -62,16 +63,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ExpiredJwtException.class)
     public ProblemDetail handleExpiredJwtException(ExpiredJwtException exception) {
-        logger.error("Authentication failed: {}", exception.getMessage());
+        logger.error("[ExpiredJwtException] Authentication failed : {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", "Jwt Token expired");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
     }
 
+    @ExceptionHandler(EmailConfirmationException.class)
+    public ProblemDetail handleEmailConfirmationException(EmailConfirmationException exception) {
+        logger.error("[EmailConfirmationException] Authentication failed : {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+        errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
     @ExceptionHandler(AccountStatusException.class)
     public ProblemDetail handleAccountStatusException(AccountStatusException exception) {
-        logger.error("Account status error: {}", exception.getMessage());
+        logger.error("[AccountStatusException] Account status error: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Account locked or disabled");
         errorDetail.setProperty("message", "The account is locked or inactive");
         errorDetail.setProperty("timestamp", Instant.now());
@@ -80,7 +90,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDeniedException(AccessDeniedException exception) {
-        logger.error("Access denied: {}", exception.getMessage());
+        logger.error("[AccessDeniedException] Access denied: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
         errorDetail.setProperty("message", "You do not have permission to access this resource");
         errorDetail.setProperty("timestamp", Instant.now());
@@ -89,7 +99,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-        logger.error("Constraint violated {}", exception.getMessage());
+        logger.error("[MethodArgumentNotValidException] Constraint violated {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid request parameter");
 //        errorDetail.setProperty("message", exception.getMessage());
         exception.getBindingResult().getAllErrors().forEach((error) -> {
@@ -137,9 +147,18 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
+    @ExceptionHandler(MailException.class)
+    public ProblemDetail handleMailException(MailException exception) {
+        logger.error("[{}] Exception with the mail server: {}", exception.getClass().getSimpleName(), exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        errorDetail.setProperty("message", "An unexpected error occurred with mail server");
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralException(Exception exception) {
-        logger.error("Unhandled exception: {}", exception.getMessage());
+        logger.error("[{}] Unhandled exception: {}", exception.getClass().getSimpleName(), exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
         errorDetail.setProperty("message", "An unexpected error occurred");
         errorDetail.setProperty("timestamp", Instant.now());

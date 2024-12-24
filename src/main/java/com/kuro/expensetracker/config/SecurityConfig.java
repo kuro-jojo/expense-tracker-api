@@ -1,7 +1,6 @@
 package com.kuro.expensetracker.config;
 
 import com.kuro.expensetracker.auth.JwtAuthenticationFilter;
-import com.kuro.expensetracker.auth.JwtAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +35,7 @@ public class SecurityConfig {
                         authorize -> {
                             authorize.requestMatchers(apiPrefix + "/users/login").permitAll();
                             authorize.requestMatchers(apiPrefix + "/users/register").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/users/confirm-email").permitAll();
                             authorize.anyRequest().authenticated();
                         })
                 .formLogin(AbstractHttpConfigurer::disable)

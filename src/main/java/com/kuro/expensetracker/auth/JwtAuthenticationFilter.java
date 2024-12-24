@@ -55,7 +55,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean isPublicEndpoint(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
-        return requestUri.equals(apiPrefix + "/users/login") || requestUri.equals(apiPrefix + "/users/register");
+        return requestUri.equals(apiPrefix + "/users/login")
+                || requestUri.equals(apiPrefix + "/users/register")
+                || requestUri.equals(apiPrefix + "/users/confirm-email");
     }
 
     private String extractJwtFromHeader(HttpServletRequest request) {
