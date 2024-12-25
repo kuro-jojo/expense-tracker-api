@@ -149,8 +149,6 @@ class AuthenticationServiceTest {
                 .password(correctPassword)
                 .build();
 
-        expectedUser.setIsVerified(true);
-
         when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(expectedUser));
         when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(null);
 
@@ -159,6 +157,7 @@ class AuthenticationServiceTest {
 
     @Test
     public void authenticate_withUnVerifiedUser_shouldThrowEmailConfirmationException() {
+        Authentication authentication = mock(Authentication.class);
         UserRequest request = UserRequest.builder()
                 .email("kuro@test.com")
                 .password(correctPassword)
@@ -167,6 +166,7 @@ class AuthenticationServiceTest {
         expectedUser.setIsVerified(false);
 
         when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(expectedUser));
+        when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(authentication);
 
         assertThrows(EmailConfirmationException.class, () -> authenticationService.authenticate(request));
     }
