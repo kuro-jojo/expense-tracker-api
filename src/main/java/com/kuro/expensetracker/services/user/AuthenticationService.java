@@ -1,6 +1,7 @@
 package com.kuro.expensetracker.services.user;
 
 import com.kuro.expensetracker.auth.JwtService;
+import com.kuro.expensetracker.exceptions.AccountAlreadyActivatedException;
 import com.kuro.expensetracker.exceptions.EmailConfirmationException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.EmailConfirmationToken;
@@ -36,7 +37,7 @@ public class AuthenticationService implements IAuthenticationService {
     private final EmailService emailService;
 
     @Value("${security.email-confirmation.expiration-time}")
-    private Long emailConfirmationExpiration;
+    private long emailConfirmationExpiration;
 
     @Override
     @Transactional
@@ -56,8 +57,6 @@ public class AuthenticationService implements IAuthenticationService {
                 LocalDateTime.now(),
                 Currency.getInstance(Locale.FRANCE) // TODO : update this with the actual user locality
         ));
-
-
         // Generate a token for confirmation
         var emailConfirmationToken = generateConfirmationToken(user);
         emailService.sendConfirmationEmail(emailConfirmationToken);
@@ -66,18 +65,43 @@ public class AuthenticationService implements IAuthenticationService {
 
     @Override
     public String authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadCredentialsException("Invalid email or password."));
+        var user = getUserToAuthenticate(request);
 
         if (!user.getIsVerified()) {
             throw new EmailConfirmationException("The email need to be confirmed");
         }
 
-        authenticationManager.authenticate(
+        return jwtService.generateToken(user);
+    }
+
+    @Override
+    public void resendConfirmationLink(UserRequest request) throws BadCredentialsException, EmailConfirmationException, MessagingException {
+        var user = getUserToAuthenticate(request);
+
+        if (user.getIsVerified()) {
+            throw new AccountAlreadyActivatedException();
+        }
+
+        emailConfirmationTokenRepository.findByUserId(user.getId()).ifPresent(emailConfirmationTokenRepository::delete);
+
+        var emailConfirmationToken = generateConfirmationToken(user);
+        emailService.sendConfirmationEmail(emailConfirmationToken);
+    }
+
+    private User getUserToAuthenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadCredentialsException(String.format("User with [%s] not found.", request.getEmail())));
+
+        var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(),
                         request.getPassword())
         );
-        return jwtService.generateToken(user);
+
+        if (auth == null) {
+            throw new BadCredentialsException("Cannot authenticate the user with email [" + user.getEmail() + "]");
+        }
+
+        return user;
     }
 
     @Override
@@ -98,19 +122,25 @@ public class AuthenticationService implements IAuthenticationService {
     @Override
     @Transactional
     public boolean confirmEmail(String token) throws EmailConfirmationException {
-        var emailConfirmationToken = emailConfirmationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new EmailConfirmationException(String.format("Invalid confirmation token [%s].", token)));
-        if (emailConfirmationToken.getUser() == null) {
+        var emailConfirmationTokenOpt = emailConfirmationTokenRepository.findByToken(token);
+        if (emailConfirmationTokenOpt.isEmpty()) {
             return false;
         }
 
+        var emailConfirmationToken = emailConfirmationTokenOpt.get();
         var user = emailConfirmationToken.getUser();
-        if (emailConfirmationToken.getExpiration().isBefore(LocalDateTime.now())) {
+        if (user == null) {
+            emailConfirmationTokenRepository.delete(emailConfirmationToken);
+            return false;
+        }
+
+        if (!emailConfirmationToken.isValid()) {
             // remove the token and the user
             emailConfirmationTokenRepository.delete(emailConfirmationToken);
             userRepository.delete(user);
             return false;
         }
+
         user.setIsVerified(true);
         userRepository.save(user);
         emailConfirmationTokenRepository.delete(emailConfirmationToken);

@@ -36,6 +36,7 @@ public class SecurityConfig {
                             authorize.requestMatchers(apiPrefix + "/users/login").permitAll();
                             authorize.requestMatchers(apiPrefix + "/users/register").permitAll();
                             authorize.requestMatchers(apiPrefix + "/users/confirm-email").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/users/resend-confirmation-link").permitAll();
                             authorize.anyRequest().authenticated();
                         })
                 .formLogin(AbstractHttpConfigurer::disable)

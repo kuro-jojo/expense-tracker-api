@@ -80,6 +80,12 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
+    @ExceptionHandler(AccountAlreadyActivatedException.class)
+    public String handleAccountAlreadyActivatedException(AccountAlreadyActivatedException exception) {
+        logger.error("[AccountAlreadyActivatedException] : {}", exception.getMessage());
+        return exception.getMessage();
+    }
+
     @ExceptionHandler(AccountStatusException.class)
     public ProblemDetail handleAccountStatusException(AccountStatusException exception) {
         logger.error("[AccountStatusException] Account status error: {}", exception.getMessage());

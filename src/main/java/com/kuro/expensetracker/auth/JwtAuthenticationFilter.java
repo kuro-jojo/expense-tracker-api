@@ -57,6 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         return requestUri.equals(apiPrefix + "/users/login")
                 || requestUri.equals(apiPrefix + "/users/register")
+                || requestUri.equals(apiPrefix + "/users/resend-confirmation-link")
                 || requestUri.equals(apiPrefix + "/users/confirm-email");
     }
 

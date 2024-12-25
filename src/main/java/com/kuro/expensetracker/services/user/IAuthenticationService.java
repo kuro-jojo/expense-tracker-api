@@ -13,7 +13,10 @@ public interface IAuthenticationService {
 
     String authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException;
 
+    void resendConfirmationLink(UserRequest request) throws BadCredentialsException, EmailConfirmationException, MessagingException;
+
     EmailConfirmationToken generateConfirmationToken(User user);
 
     boolean confirmEmail(String token) throws EmailConfirmationException;
+
 }

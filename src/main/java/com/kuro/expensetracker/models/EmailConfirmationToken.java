@@ -1,13 +1,15 @@
 package com.kuro.expensetracker.models;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class EmailConfirmationToken {
     @Id
@@ -16,7 +18,11 @@ public class EmailConfirmationToken {
     @Column(unique = true)
     private String token;
     private LocalDateTime expiration;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    public boolean isValid() {
+        return expiration.isAfter(LocalDateTime.now());
+    }
 }
