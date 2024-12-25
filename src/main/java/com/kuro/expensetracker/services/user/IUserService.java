@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface IUserService {
     Optional<User> getById(Long id) throws UserNotFoundException;
 
-    User update(UserRequest user);
+    void update(UserRequest user);
 
-    void deleteUserById(Long id);
+    void delete(User user);
 }

@@ -2,15 +2,18 @@ package com.kuro.expensetracker.controllers;
 
 import com.kuro.expensetracker.exceptions.EmailConfirmationException;
 import com.kuro.expensetracker.exceptions.UserAlreadyPresentException;
+import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.UserRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.user.AuthenticationService;
+import com.kuro.expensetracker.services.user.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("${api.prefix}/users")
 public class UserController {
     private final AuthenticationService authenticationService;
+    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserRequest request) throws EmailConfirmationException {
@@ -48,6 +52,26 @@ public class UserController {
             return ResponseEntity.ok("Your email has been successfully verified.");
         }
         return ResponseEntity.ok("User details not found or the link has expired. If you already registered, please request a new confirmation link.");
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<ApiResponse> updateUser(
+            @RequestBody UserRequest request,
+            @AuthenticationPrincipal User user) {
+
+        if (request.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Please provide a least one field to update"));
+        }
+        request.setId(user.getId());
+        userService.update(request);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("User updated successfully."));
+    }
+
+    @DeleteMapping("/profile")
+    public ResponseEntity<ApiResponse> deleteUser(
+            @AuthenticationPrincipal User user) {
+        userService.delete(user);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("User Deleted successfully."));
     }
 
 

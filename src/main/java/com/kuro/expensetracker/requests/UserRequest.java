@@ -27,4 +27,12 @@ public class UserRequest {
     private List<Transaction> transactions;
     private List<Budget> budgets;
     private List<PaymentMode> paymentModes;
+
+    public boolean isEmpty() {
+        return id == null &&
+                (name == null || name.isBlank()) &&
+                (email == null || email.isBlank()) &&
+                (password == null || password.isBlank()) &&
+                currency == null;
+    }
 }
