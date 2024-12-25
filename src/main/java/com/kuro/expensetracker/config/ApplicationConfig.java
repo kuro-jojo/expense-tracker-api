@@ -6,10 +6,10 @@ import com.kuro.expensetracker.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -28,7 +28,7 @@ public class ApplicationConfig {
     @Bean
     UserDetailsService userDetailsService() {
         return uuid -> userRepository.findByUuid(uuid)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new BadCredentialsException(String.format("User with uuid [%s] not found", uuid)));
     }
 
     @Bean
@@ -39,10 +39,9 @@ public class ApplicationConfig {
     @Bean
     DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(username ->
-                userRepository.findByEmail(username).orElseThrow(
-                        () -> new UsernameNotFoundException("User not found")
-                ));
+        authProvider.setUserDetailsService(email ->
+                userRepository.findByEmail(email)
+                        .orElseThrow(() -> new BadCredentialsException(String.format("User with email [%s] not found", email))));
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

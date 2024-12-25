@@ -1,13 +1,11 @@
 package com.kuro.expensetracker.auth;
 
+import com.kuro.expensetracker.exceptions.JwtAuthenticationException;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,16 +27,16 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         UserDetails userDetails;
 
         if (token == null) {
-            throw new BadCredentialsException("Invalid JWT token");
+            throw new JwtAuthenticationException("No token has been provided");
         }
         if (jwtService.isTokenExpired(token)) {
-            throw new CredentialsExpiredException("Token expired!");
+            throw new JwtAuthenticationException("Token has expired");
         }
 
         String userID = jwtService.extractUserID(token);
         userDetails = userDetailsService.loadUserByUsername(userID);
         if (userDetails == null) {
-            throw new UsernameNotFoundException("User not found");
+            throw new JwtAuthenticationException("No user found with the uuid found in the token #[" + userID + "]");
         }
 
         return new JwtAuthenticationToken(userDetails, token, List.of());

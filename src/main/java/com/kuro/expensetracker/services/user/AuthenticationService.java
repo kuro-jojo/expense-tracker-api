@@ -90,7 +90,7 @@ public class AuthenticationService implements IAuthenticationService {
 
     private User getUserToAuthenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {
         var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadCredentialsException(String.format("User with [%s] not found.", request.getEmail())));
+                .orElseThrow(() -> new BadCredentialsException(String.format("User with email [%s] not found.", request.getEmail())));
 
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(),
