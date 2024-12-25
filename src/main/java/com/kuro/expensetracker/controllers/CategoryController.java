@@ -22,7 +22,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse> createCategory(
             @Valid @RequestBody CategoryRequest request,
             @AuthenticationPrincipal User user) {
-        request.setOwner(user);
+        categoryService.setOwnerId(user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Category added successfully", categoryService.create(request)));
     }
 

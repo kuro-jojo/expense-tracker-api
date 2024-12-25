@@ -5,12 +5,14 @@ import com.kuro.expensetracker.models.PaymentMode;
 import com.kuro.expensetracker.models.Transaction;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.Currency;
 import java.util.List;
 
+@Builder
 @Data
 public class UserRequest {
     private Long id;

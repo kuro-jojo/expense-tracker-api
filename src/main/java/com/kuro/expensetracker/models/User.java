@@ -2,9 +2,7 @@ package com.kuro.expensetracker.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.type.YesNoConverter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +13,11 @@ import java.util.Currency;
 import java.util.List;
 import java.util.UUID;
 
+@Builder
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class User implements UserDetails {
     @Id

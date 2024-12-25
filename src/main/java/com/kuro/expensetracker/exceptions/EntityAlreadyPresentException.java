@@ -7,6 +7,6 @@ public class EntityAlreadyPresentException extends RuntimeException {
     }
 
     public EntityAlreadyPresentException(Class<?> entity, String name) {
-        super(entity.getSimpleName() + " with credential [" + name + "] is already present.");
+        super(entity.getSimpleName() + " with value [" + name + "] is already present.");
     }
 }

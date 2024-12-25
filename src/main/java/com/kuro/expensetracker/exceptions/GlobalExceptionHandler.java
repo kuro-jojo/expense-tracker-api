@@ -2,6 +2,7 @@ package com.kuro.expensetracker.exceptions;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,7 +30,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBadCredentialsException(BadCredentialsException exception) {
         logger.error("[BadCredentialsException] Authentication failed: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
-        errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("message", "Bad credentials");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
     }
@@ -101,12 +102,33 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         logger.error("[MethodArgumentNotValidException] Constraint violated {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid request parameter");
-//        errorDetail.setProperty("message", exception.getMessage());
         exception.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errorDetail.setProperty(fieldName, errorMessage);
         });
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail handleConstraintViolationException(ConstraintViolationException exception) {
+        logger.error("[ConstraintViolationException] Constraint violated {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid request parameter");
+        exception.getConstraintViolations().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getMessage();
+            errorDetail.setProperty(fieldName, errorMessage);
+        });
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(InvalidValueException.class)
+    public ProblemDetail handleInvalidValueException(InvalidValueException exception) {
+        logger.error("Invalid value exception {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
     }
@@ -129,14 +151,6 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
-    @ExceptionHandler(InvalidValueException.class)
-    public ProblemDetail handleInvalidValueException(InvalidValueException exception) {
-        logger.error("Invalid value exception {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        errorDetail.setProperty("message", exception.getMessage());
-        errorDetail.setProperty("timestamp", Instant.now());
-        return errorDetail;
-    }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrityViolationException(DataIntegrityViolationException exception) {

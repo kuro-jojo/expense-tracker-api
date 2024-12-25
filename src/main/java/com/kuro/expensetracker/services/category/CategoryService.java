@@ -21,11 +21,11 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public Category create(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException {
-        categoryRepository.findByNameAndOwnerId(request.getName(), request.getOwner().getId()).ifPresent(
-                category -> {
-                    throw new EntityAlreadyPresentException(Category.class, request.getName());
-                }
-        );
+        categoryRepository.findByNameAndOwnerId(request.getName(), ownerId)
+                .ifPresent(category -> {
+                            throw new EntityAlreadyPresentException(Category.class, request.getName());
+                        }
+                );
 
         if (request.getThreshold() != null && request.getThreshold() < 0) {
             throw new InvalidValueException("Threshold must be greater than zero!");
