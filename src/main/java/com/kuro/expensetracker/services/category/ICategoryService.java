@@ -18,4 +18,6 @@ public interface ICategoryService {
     Category getById(Long id) throws EntityNotFoundException;
 
     List<Category> getAll();
+
+    List<Category> getAllWithNameOnly();
 }

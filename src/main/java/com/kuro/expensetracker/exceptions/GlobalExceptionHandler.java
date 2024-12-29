@@ -6,12 +6,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mail.MailException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.security.SignatureException;
 import java.time.Instant;
@@ -88,9 +90,35 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidValueException.class)
     public ProblemDetail handleInvalidValueException(InvalidValueException exception) {
         logger.error("Invalid value exception {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid value");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleRequestBodyMissingException(HttpMessageNotReadableException exception) {
+        logger.error("[HttpMessageNotReadableException] {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        if (exception.getMessage().contains("body is missing")) {
+            errorDetail.setProperty("message", "Request body is missing");
+        } else if (exception.getMessage().contains("JSON parse error")) {
+            errorDetail.setDetail("Invalid input");
+            errorDetail.setProperty("message", "One or more fields have invalid values. Please check your request.");
+        } else {
+            throw new RuntimeException(exception);
+        }
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleInvalidBooleanValue(MethodArgumentTypeMismatchException exception) {
+        String paramName = exception.getName();
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid value for parameter '" + paramName + "'.");
+        errorDetail.setProperty("message", "The value for '" + paramName + "' must be a valid boolean ('true' or 'false').");
+        errorDetail.setProperty("timestamp", Instant.now());
+
         return errorDetail;
     }
 

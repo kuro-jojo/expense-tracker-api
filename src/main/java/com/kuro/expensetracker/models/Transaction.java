@@ -9,7 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -26,10 +27,10 @@ public class Transaction {
     protected String title;
     protected String description;
     @Column(nullable = false)
-    protected LocalDate transactionDate;
+    protected LocalDateTime transactionDate;
     @Column(nullable = false)
     @NotNull
-    protected Float amount;
+    protected BigDecimal amount;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -41,7 +42,7 @@ public class Transaction {
     @JsonIgnore
     protected User owner;
 
-    public Transaction(String title, String description, Float amount, Category category, LocalDate transactionDate, User owner) {
+    public Transaction(String title, String description, BigDecimal amount, Category category, LocalDateTime transactionDate, User owner) {
         this.title = title;
         this.description = description;
         this.amount = amount;
@@ -50,7 +51,7 @@ public class Transaction {
         this.owner = owner;
     }
 
-    public Transaction(Long id, String title, String description, Float amount, Category category, LocalDate transactionDate, User owner) {
+    public Transaction(Long id, String title, String description, BigDecimal amount, Category category, LocalDateTime transactionDate, User owner) {
         this.id = id;
         this.title = title;
         this.description = description;

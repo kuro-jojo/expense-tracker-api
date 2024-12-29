@@ -1,11 +1,11 @@
 package com.kuro.expensetracker.controllers;
 
 import com.kuro.expensetracker.exceptions.InvalidValueException;
-import com.kuro.expensetracker.models.Income;
+import com.kuro.expensetracker.models.Expense;
 import com.kuro.expensetracker.models.User;
-import com.kuro.expensetracker.requests.IncomeRequest;
+import com.kuro.expensetracker.requests.ExpenseRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
-import com.kuro.expensetracker.services.transaction.income.IncomeService;
+import com.kuro.expensetracker.services.transaction.expense.ExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,76 +21,76 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("${api.prefix}/incomes")
-public class IncomeController {
-    private final IncomeService incomeService;
+@RequestMapping("${api.prefix}/expenses")
+public class ExpenseController {
+    private final ExpenseService expenseService;
 
     @PostMapping()
-    public ResponseEntity<ApiResponse> createIncome(@RequestBody @Valid IncomeRequest request, @AuthenticationPrincipal User user) {
+    public ResponseEntity<ApiResponse> createExpense(@RequestBody @Valid ExpenseRequest request, @AuthenticationPrincipal User user) {
         request.setOwner(user);
-        Income income = incomeService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Income created successfully", income));
+        Expense expense = expenseService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Expense created successfully", expense));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse> getIncomeById(@PathVariable String id, @AuthenticationPrincipal User user) {
+    public ResponseEntity<ApiResponse> getExpenseById(@PathVariable String id, @AuthenticationPrincipal User user) {
         try {
-            incomeService.setOwnerId(user.getId());
-            var income = incomeService.getById(Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse(income));
+            expenseService.setOwnerId(user.getId());
+            var expense = expenseService.getById(Long.valueOf(id));
+            return ResponseEntity.ok(new ApiResponse(expense));
         } catch (NumberFormatException e) {
-            throw new InvalidValueException("Invalid income id provided!");
+            throw new InvalidValueException("Invalid expense id provided!");
         }
 
     }
 
     @GetMapping("")
-    public ResponseEntity<ApiResponse> getIncomesByField(
-            @RequestParam(required = false) String field,
-            @RequestParam(required = false) String value,
-            @RequestParam(required = false) String value2,
+    public ResponseEntity<ApiResponse> getExpensesByField(
+            @RequestParam(required = false, value = "f") String field,
+            @RequestParam(required = false, value = "v") String value,
+            @RequestParam(required = false, value = "v2") String value2,
             @AuthenticationPrincipal User user) {
         try {
-            incomeService.setOwnerId(user.getId());
+            expenseService.setOwnerId(user.getId());
 
-            List<Income> incomes;
+            List<Expense> expenses;
             if (field == null) {
-                incomes = incomeService.getAll();
+                expenses = expenseService.getAll();
             } else {
                 switch (field) {
                     case "category": // assume it is the category name
-                        incomes = incomeService.getByCategory(value);
+                        expenses = expenseService.getByCategory(value);
                         break;
                     case "date":
-                        incomes = incomeService.getByTransactionDate(LocalDate.parse(value));
+                        expenses = expenseService.getByTransactionDate(LocalDate.parse(value));
                         break;
                     case "before":
-                        incomes = incomeService.getBeforeDate(LocalDate.parse(value));
+                        expenses = expenseService.getBeforeDate(LocalDate.parse(value));
                         break;
                     case "after":
-                        incomes = incomeService.getAfterDate(LocalDate.parse(value));
+                        expenses = expenseService.getAfterDate(LocalDate.parse(value));
                         break;
                     case "between":
                         if (value2 == null) {
-                            incomes = incomeService.getBetweenDate(LocalDate.parse(value), LocalDate.now());
+                            expenses = expenseService.getBetweenDate(LocalDate.parse(value), LocalDate.now());
                         } else {
-                            incomes = incomeService.getBetweenDate(LocalDate.parse(value), LocalDate.parse(value2));
+                            expenses = expenseService.getBetweenDate(LocalDate.parse(value), LocalDate.parse(value2));
                         }
                         break;
                     default:
-                        incomes = incomeService.getAll();
+                        expenses = expenseService.getAll();
                 }
             }
-            return ResponseEntity.ok(new ApiResponse(incomes, incomes.size()));
+            return ResponseEntity.ok(new ApiResponse(expenses, expenses.size()));
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse> updateIncomeById(
+    public ResponseEntity<ApiResponse> updateExpenseById(
             @PathVariable String id,
-            @RequestBody IncomeRequest request,
+            @RequestBody ExpenseRequest request,
             @AuthenticationPrincipal User user
     ) {
         try {
@@ -98,45 +98,45 @@ public class IncomeController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("No new value provided for update"));
             }
             request.setOwner(user);
-            var income = incomeService.update(request, Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse("Expense updated successfully", income));
+            var expense = expenseService.update(request, Long.valueOf(id));
+            return ResponseEntity.ok(new ApiResponse("Expense updated successfully", expense));
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid expense id provided!");
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteIncomeById(
+    public ResponseEntity<ApiResponse> deleteExpenseById(
             @PathVariable String id,
             @AuthenticationPrincipal User user) {
         try {
-            incomeService.setOwnerId(user.getId());
-            incomeService.deleteById(Long.valueOf(id));
+            expenseService.setOwnerId(user.getId());
+            expenseService.deleteById(Long.valueOf(id));
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
         } catch (NumberFormatException e) {
-            throw new InvalidValueException("Invalid income id provided!");
+            throw new InvalidValueException("Invalid expense id provided!");
         }
     }
 
     @GetMapping("total")
-    public ResponseEntity<ApiResponse> getTotalIncomes(
+    public ResponseEntity<ApiResponse> getTotalExpenses(
             @RequestParam(required = false, value = "s") String startDate,
             @RequestParam(required = false, value = "e") String endDate,
             @AuthenticationPrincipal User user
     ) {
         try {
 
-            incomeService.setOwnerId(user.getId());
+            expenseService.setOwnerId(user.getId());
             BigDecimal total;
             if (startDate != null) {
                 if (endDate != null) {
-                    total = incomeService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.parse(endDate));
+                    total = expenseService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.parse(endDate));
                 } else {
-                    total = incomeService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.now());
+                    total = expenseService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.now());
                 }
             } else {
-                total = incomeService.getTotal();
+                total = expenseService.getTotal();
             }
             return ResponseEntity.ok(new ApiResponse(total));
         } catch (DateTimeParseException e) {

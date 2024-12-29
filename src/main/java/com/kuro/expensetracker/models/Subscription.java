@@ -6,7 +6,9 @@ import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -17,7 +19,7 @@ public class Subscription extends Transaction {
     private Frequency frequency;
     private Boolean isActive;
 
-    public Subscription(String title, String description, Float amount, Category category, LocalDate transactionDate, User user, LocalDate dueDate, Frequency frequency, Boolean isActive) {
+    public Subscription(String title, String description, BigDecimal amount, Category category, LocalDateTime transactionDate, User user, LocalDate dueDate, Frequency frequency, Boolean isActive) {
         super(title, description, amount, category, transactionDate, user);
         this.dueDate = dueDate;
         this.frequency = frequency;

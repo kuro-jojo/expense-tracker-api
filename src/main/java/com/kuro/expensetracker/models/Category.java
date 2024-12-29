@@ -2,11 +2,14 @@ package com.kuro.expensetracker.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Getter
 @Setter
 @AllArgsConstructor
@@ -20,7 +23,7 @@ public class Category {
     @Column(nullable = false)
     private String name;
     private String description;
-    private Float threshold;
+    private BigDecimal threshold;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("category")
@@ -35,7 +38,7 @@ public class Category {
         this.name = name;
     }
 
-    public Category(String name, String description, Float threshold, List<Transaction> transactions, User owner) {
+    public Category(String name, String description, BigDecimal threshold, List<Transaction> transactions, User owner) {
         this.name = name;
         this.description = description;
         this.threshold = threshold;

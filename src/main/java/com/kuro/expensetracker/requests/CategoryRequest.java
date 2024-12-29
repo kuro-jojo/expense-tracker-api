@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Builder
@@ -15,7 +16,7 @@ public class CategoryRequest {
     @NotNull
     private String name;
     private String description;
-    private Float threshold;
+    private BigDecimal threshold;
     private List<Transaction> transactions;
     private User owner;
 }

@@ -27,7 +27,7 @@ public class CategoryService implements ICategoryService {
                         }
                 );
 
-        if (request.getThreshold() != null && request.getThreshold() < 0) {
+        if (request.getThreshold() != null && request.getThreshold().signum() < 0) {
             throw new InvalidValueException("Threshold must be greater than zero!");
         }
 
@@ -50,10 +50,10 @@ public class CategoryService implements ICategoryService {
     }
 
     private Category updateCategory(Category existingCategory, CategoryRequest request) throws InvalidValueException {
-        if (request.getThreshold() != null && request.getThreshold() < 0) {
+        if (request.getThreshold() != null && request.getThreshold().signum() < 0) {
             throw new InvalidValueException("Threshold must be greater than zero!");
         }
-        if (request.getName() != null) {
+        if (request.getName() != null && !request.getName().isBlank()) {
             existingCategory.setName(request.getName());
         }
         if (request.getDescription() != null) {
@@ -89,5 +89,14 @@ public class CategoryService implements ICategoryService {
     @Override
     public List<Category> getAll() {
         return categoryRepository.findByOwnerId(ownerId);
+    }
+
+    @Override
+    public List<Category> getAllWithNameOnly() {
+        var categories = categoryRepository.findByOwnerId(ownerId);
+
+        return categories.stream()
+                .map(category -> new Category(category.getName()))
+                .toList();
     }
 }

@@ -5,18 +5,16 @@ import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("income")
 public class Income extends Transaction {
-    public Income(String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
-        super(title, description, amount, category, transactionDate, user);
-    }
 
-    public Income(Long id, String title, String description, Float amount, Category category, LocalDate transactionDate, User user) {
-        super(id, title, description, amount, category, transactionDate, user);
+    public Income(Long id, String title, String description, BigDecimal amount, Category category, LocalDateTime transactionDate, User owner) {
+        super(id, title, description, amount, category, transactionDate, owner);
     }
 }
