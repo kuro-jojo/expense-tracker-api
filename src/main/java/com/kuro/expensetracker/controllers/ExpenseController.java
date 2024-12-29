@@ -51,40 +51,45 @@ public class ExpenseController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ApiResponse> getExpensesByField(
-            @RequestParam(required = false, value = "f") String field,
-            @RequestParam(required = false, value = "v") String value,
-            @RequestParam(required = false, value = "v2") String value2,
+    public ResponseEntity<ApiResponse> getExpensesByCategoryNameFilteredByTransactionDate(
+            @RequestParam(required = false, value = "c") String categoryName,
+            @RequestParam(required = false, value = "b") String beforeDate,
+            @RequestParam(required = false, value = "a") String afterDate,
+            @RequestParam(required = false, value = "s") String startDate,
+            @RequestParam(required = false, value = "e") String endDate,
             @AuthenticationPrincipal User user) {
         try {
             expenseService.setOwnerId(user.getId());
 
             List<Expense> expenses;
-            if (field == null) {
-                expenses = expenseService.getAll();
+
+            if (categoryName != null) {
+                if (startDate != null && endDate != null) {
+                    expenses = expenseService.getByCategoryAndDateBetween(categoryName, LocalDate.parse(startDate), LocalDate.parse(endDate));
+                } else if (startDate != null) {
+                    expenses = expenseService.getByCategoryAndDateBetween(categoryName, LocalDate.parse(startDate), LocalDate.now());
+                } else if (endDate != null) {
+                    expenses = expenseService.getByCategoryAndDateBetween(categoryName, LocalDate.now(), LocalDate.parse(endDate));
+                } else if (beforeDate != null) {
+                    expenses = expenseService.getByCategoryAndDateBefore(categoryName, LocalDate.parse(beforeDate));
+                } else if (afterDate != null) {
+                    expenses = expenseService.getByCategoryAndDateAfter(categoryName, LocalDate.parse(afterDate));
+                } else {
+                    expenses = expenseService.getByCategory(categoryName);
+                }
             } else {
-                switch (field) {
-                    case "category": // assume it is the category name
-                        expenses = expenseService.getByCategory(value);
-                        break;
-                    case "date":
-                        expenses = expenseService.getByTransactionDate(LocalDate.parse(value));
-                        break;
-                    case "before":
-                        expenses = expenseService.getBeforeDate(LocalDate.parse(value));
-                        break;
-                    case "after":
-                        expenses = expenseService.getAfterDate(LocalDate.parse(value));
-                        break;
-                    case "between":
-                        if (value2 == null) {
-                            expenses = expenseService.getBetweenDate(LocalDate.parse(value), LocalDate.now());
-                        } else {
-                            expenses = expenseService.getBetweenDate(LocalDate.parse(value), LocalDate.parse(value2));
-                        }
-                        break;
-                    default:
-                        expenses = expenseService.getAll();
+                if (startDate != null && endDate != null) {
+                    expenses = expenseService.getByDateBetween(LocalDate.parse(startDate), LocalDate.parse(endDate));
+                } else if (startDate != null) {
+                    expenses = expenseService.getByDateBetween(LocalDate.parse(startDate), LocalDate.now());
+                } else if (endDate != null) {
+                    expenses = expenseService.getByDateBetween(LocalDate.now(), LocalDate.parse(endDate));
+                } else if (beforeDate != null) {
+                    expenses = expenseService.getByDateBefore(LocalDate.parse(beforeDate));
+                } else if (afterDate != null) {
+                    expenses = expenseService.getByDateAfter(LocalDate.parse(afterDate));
+                } else {
+                    expenses = expenseService.getAll();
                 }
             }
 

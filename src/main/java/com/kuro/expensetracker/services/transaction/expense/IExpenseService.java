@@ -16,19 +16,21 @@ public interface IExpenseService {
 
     List<Expense> getAll();
 
-    List<Expense> getByCategory(Long categoryId);
-
     List<Expense> getByCategory(String categoryName);
-
-    List<Expense> getByTransactionDate(LocalDate date);
-
-    List<Expense> getBeforeDate(LocalDate date);
-
-    List<Expense> getAfterDate(LocalDate date);
-
-    List<Expense> getBetweenDate(LocalDate minDate, LocalDate maxDate);
 
     BigDecimal getTotal();
 
     BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate);
+
+    List<Expense> getByCategoryAndDateBetween(String categoryName, LocalDate startDate, LocalDate endDate);
+
+    List<Expense> getByCategoryAndDateBefore(String categoryName, LocalDate beforeDate);
+
+    List<Expense> getByCategoryAndDateAfter(String categoryName, LocalDate afterDate);
+
+    List<Expense> getByDateBetween(LocalDate startDate, LocalDate endDate);
+
+    List<Expense> getByDateBefore(LocalDate dateBefore);
+
+    List<Expense> getByDateAfter(LocalDate afterDate);
 }

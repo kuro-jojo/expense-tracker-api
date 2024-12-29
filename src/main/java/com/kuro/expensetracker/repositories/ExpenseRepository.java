@@ -16,21 +16,25 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     List<Expense> findByOwnerId(Long ownerId);
 
-    List<Expense> findByCategoryId(Long categoryId);
+    List<Expense> findByOwnerIdAndCategoryId(Long ownerId, Long categoryId);
 
-    List<Expense> findByCategoryName(String categoryName);
-
-    List<Expense> findByTransactionDateBefore(LocalDate date);
-
-    List<Expense> findByTransactionDateAfter(LocalDate date);
-
-    List<Expense> findByTransactionDateBetween(LocalDate minDate, LocalDate maxDate);
-
-    List<Expense> findByTransactionDate(LocalDate date);
+    List<Expense> findByOwnerIdAndCategoryName(Long ownerId, String categoryName);
 
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.owner.id = :ownerId")
     Optional<BigDecimal> findTotalExpensesByOwnerId(@Param("ownerId") Long ownerId);
 
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.owner.id = :ownerId AND e.transactionDate BETWEEN :s AND :e")
     Optional<BigDecimal> findTotalExpensesByOwnerIdBetween(@Param("ownerId") Long ownerId, @Param("s") LocalDateTime startDate, @Param("e") LocalDateTime endDate);
+
+    List<Expense> findByOwnerIdAndCategoryNameAndTransactionDateBetween(Long ownerId, String categoryName, LocalDateTime of, LocalDateTime of1);
+
+    List<Expense> findByOwnerIdAndCategoryNameAndTransactionDateBefore(Long ownerId, String categoryName, LocalDateTime of);
+
+    List<Expense> findByOwnerIdAndCategoryNameAndTransactionDateAfter(Long ownerId, String categoryName, LocalDateTime of);
+
+    List<Expense> findByOwnerIdAndTransactionDateBetween(Long ownerId, LocalDateTime of, LocalDateTime of1);
+
+    List<Expense> findByOwnerIdAndTransactionDateBefore(Long ownerId, LocalDateTime of);
+
+    List<Expense> findByOwnerIdAndTransactionDateAfter(Long ownerId, LocalDateTime of);
 }

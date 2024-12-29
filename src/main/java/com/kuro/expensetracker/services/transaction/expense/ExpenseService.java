@@ -68,34 +68,10 @@ public class ExpenseService extends TransactionService implements IExpenseServic
         return expenseRepository.findByOwnerId(ownerId);
     }
 
-    @Override
-    public List<Expense> getByCategory(Long categoryId) {
-        return expenseRepository.findByCategoryId(categoryId);
-    }
 
     @Override
     public List<Expense> getByCategory(String categoryName) {
-        return expenseRepository.findByCategoryName(categoryName);
-    }
-
-    @Override
-    public List<Expense> getByTransactionDate(LocalDate date) {
-        return expenseRepository.findByTransactionDate(date);
-    }
-
-    @Override
-    public List<Expense> getBeforeDate(LocalDate date) {
-        return expenseRepository.findByTransactionDateBefore(date);
-    }
-
-    @Override
-    public List<Expense> getAfterDate(LocalDate date) {
-        return expenseRepository.findByTransactionDateAfter(date);
-    }
-
-    @Override
-    public List<Expense> getBetweenDate(LocalDate minDate, LocalDate maxDate) {
-        return expenseRepository.findByTransactionDateBetween(minDate, maxDate);
+        return expenseRepository.findByOwnerIdAndCategoryName(ownerId, categoryName);
     }
 
     @Override
@@ -106,7 +82,48 @@ public class ExpenseService extends TransactionService implements IExpenseServic
     @Override
     public BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate) {
         return expenseRepository.findTotalExpensesByOwnerIdBetween(ownerId,
-                LocalDateTime.of(startDate, LocalTime.of(23, 59, 59)),
+                LocalDateTime.of(startDate, LocalTime.of(0, 0, 0)),
                 LocalDateTime.of(endDate, LocalTime.of(23, 59, 59))).orElse(new BigDecimal(0));
+    }
+
+    @Override
+    public List<Expense> getByCategoryAndDateBetween(String categoryName, LocalDate startDate, LocalDate endDate) {
+        return expenseRepository.findByOwnerIdAndCategoryNameAndTransactionDateBetween(ownerId,
+                categoryName,
+                LocalDateTime.of(startDate, LocalTime.of(0, 0, 0)),
+                LocalDateTime.of(endDate, LocalTime.of(23, 59, 59)));
+    }
+
+    @Override
+    public List<Expense> getByCategoryAndDateBefore(String categoryName, LocalDate beforeDate) {
+        return expenseRepository.findByOwnerIdAndCategoryNameAndTransactionDateBefore(ownerId,
+                categoryName,
+                LocalDateTime.of(beforeDate, LocalTime.of(23, 59, 59)));
+    }
+
+    @Override
+    public List<Expense> getByCategoryAndDateAfter(String categoryName, LocalDate afterDate) {
+        return expenseRepository.findByOwnerIdAndCategoryNameAndTransactionDateAfter(ownerId,
+                categoryName,
+                LocalDateTime.of(afterDate, LocalTime.of(0, 0, 0)));
+    }
+
+    @Override
+    public List<Expense> getByDateBetween(LocalDate startDate, LocalDate endDate) {
+        return expenseRepository.findByOwnerIdAndTransactionDateBetween(ownerId,
+                LocalDateTime.of(startDate, LocalTime.of(0, 0, 0)),
+                LocalDateTime.of(endDate, LocalTime.of(23, 59, 59)));
+    }
+
+    @Override
+    public List<Expense> getByDateBefore(LocalDate dateBefore) {
+        return expenseRepository.findByOwnerIdAndTransactionDateBefore(ownerId,
+                LocalDateTime.of(dateBefore, LocalTime.of(23, 59, 59)));
+    }
+
+    @Override
+    public List<Expense> getByDateAfter(LocalDate afterDate) {
+        return expenseRepository.findByOwnerIdAndTransactionDateAfter(ownerId,
+                LocalDateTime.of(afterDate, LocalTime.of(0, 0, 0)));
     }
 }
