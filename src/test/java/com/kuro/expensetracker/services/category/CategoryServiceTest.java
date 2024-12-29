@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +40,7 @@ class CategoryServiceTest {
                 .id(categoryId)
                 .name("sport")
                 .description("For sports transactions")
-                .threshold(200f)
+                .threshold(new BigDecimal(200))
                 .transactions(List.of())
                 .build();
     }
@@ -49,7 +50,7 @@ class CategoryServiceTest {
         CategoryRequest categoryRequest = CategoryRequest.builder()
                 .name("sport")
                 .description("For sports transactions")
-                .threshold(200f)
+                .threshold(new BigDecimal(200))
                 .build();
 
         when(categoryRepository.findByNameAndOwnerId(categoryRequest.getName(), ownerId))
@@ -66,7 +67,7 @@ class CategoryServiceTest {
         CategoryRequest categoryRequest = CategoryRequest.builder()
                 .name("sport")
                 .description("For sports transactions")
-                .threshold(-200f)
+                .threshold(new BigDecimal(200).negate())
                 .build();
 
         when(categoryRepository.findByNameAndOwnerId(categoryRequest.getName(), ownerId))
@@ -80,7 +81,7 @@ class CategoryServiceTest {
         CategoryRequest categoryRequest = CategoryRequest.builder()
                 .name("sport")
                 .description("For sports transactions")
-                .threshold(200f)
+                .threshold(new BigDecimal(200))
                 .build();
 
         when(categoryRepository.findByNameAndOwnerId(categoryRequest.getName(), ownerId))
