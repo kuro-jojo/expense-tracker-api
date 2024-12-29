@@ -1,36 +1,33 @@
 package com.kuro.expensetracker.responses;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ApiResponse {
+    private Boolean success;
+    private Integer status;
     private String message;
     private Integer total;
-    private Object data;
+    private Map<String, Object> additionalContent;
 
-    public ApiResponse(String message) {
-        this.message = message;
+    public ApiResponse(boolean success, Integer status) {
+        this.success = success;
+        this.status = status;
+        additionalContent = new HashMap<>();
     }
 
-    public ApiResponse(Object data) {
-        this.data = data;
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalContent() {
+        return additionalContent;
     }
 
-    public ApiResponse(String message, Object data) {
-        this.message = message;
-        this.data = data;
-    }
-
-    public ApiResponse(String message, Object data, int total) {
-        this.message = message;
-        this.data = data;
-        this.total = total;
-    }
-
-    public ApiResponse(Object data, int total) {
-        this.data = data;
-        this.total = total;
+    public void addContent(String key, Object value) {
+        additionalContent.put(key, value);
     }
 }

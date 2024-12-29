@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -29,7 +28,11 @@ public class IncomeController {
     public ResponseEntity<ApiResponse> createIncome(@RequestBody @Valid IncomeRequest request, @AuthenticationPrincipal User user) {
         request.setOwner(user);
         Income income = incomeService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Income created successfully", income));
+
+        ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
+        response.setMessage("Income created successfully");
+        response.addContent("income", income);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
@@ -37,7 +40,10 @@ public class IncomeController {
         try {
             incomeService.setOwnerId(user.getId());
             var income = incomeService.getById(Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse(income));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.addContent("income", income);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid income id provided!");
         }
@@ -81,7 +87,11 @@ public class IncomeController {
                         incomes = incomeService.getAll();
                 }
             }
-            return ResponseEntity.ok(new ApiResponse(incomes, incomes.size()));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.setTotal(incomes.size());
+            response.addContent("incomes", incomes);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }
@@ -95,13 +105,19 @@ public class IncomeController {
     ) {
         try {
             if (request.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("No new value provided for update"));
+                ApiResponse response = new ApiResponse(false, HttpStatus.BAD_REQUEST.value());
+                response.setMessage("No new value provided for update");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             request.setOwner(user);
             var income = incomeService.update(request, Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse("Expense updated successfully", income));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.setMessage("Income updated successfully");
+            response.addContent("income", income);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
-            throw new InvalidValueException("Invalid expense id provided!");
+            throw new InvalidValueException("Invalid income id provided!");
         }
     }
 
@@ -131,14 +147,17 @@ public class IncomeController {
             BigDecimal total;
             if (startDate != null) {
                 if (endDate != null) {
-                    total = incomeService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.parse(endDate));
+                    total = incomeService.getTotalBetween(LocalDate.parse(startDate), LocalDate.parse(endDate));
                 } else {
-                    total = incomeService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.now());
+                    total = incomeService.getTotalBetween(LocalDate.parse(startDate), LocalDate.now());
                 }
             } else {
                 total = incomeService.getTotal();
             }
-            return ResponseEntity.ok(new ApiResponse(total));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.addContent("total", total);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }

@@ -6,7 +6,6 @@ import com.kuro.expensetracker.requests.IncomeRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IIncomeService {
@@ -30,5 +29,5 @@ public interface IIncomeService {
 
     BigDecimal getTotal();
 
-    BigDecimal getTotalBetween(LocalDateTime startDate, LocalDateTime endDate);
+    BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate);
 }

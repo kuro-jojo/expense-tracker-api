@@ -28,9 +28,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     List<Expense> findByTransactionDate(LocalDate date);
 
-    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.owner = :ownerId")
-    BigDecimal findTotalExpensesByOwnerId(@Param("ownerId") Long ownerId);
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.owner.id = :ownerId")
+    Optional<BigDecimal> findTotalExpensesByOwnerId(@Param("ownerId") Long ownerId);
 
-    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.owner = :ownerId AND e.transactionDate BETWEEN :s AND :e")
-    BigDecimal findTotalExpensesByOwnerIdBetween(@Param("ownerId") Long ownerId, @Param("s") LocalDateTime startDate, @Param("e") LocalDateTime endDate);
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.owner.id = :ownerId AND e.transactionDate BETWEEN :s AND :e")
+    Optional<BigDecimal> findTotalExpensesByOwnerIdBetween(@Param("ownerId") Long ownerId, @Param("s") LocalDateTime startDate, @Param("e") LocalDateTime endDate);
 }

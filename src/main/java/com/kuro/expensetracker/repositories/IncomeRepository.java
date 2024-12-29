@@ -29,9 +29,9 @@ public interface IncomeRepository extends JpaRepository<Income, Long> {
 
     List<Income> findByTransactionDate(LocalDate date);
 
-    @Query("SELECT SUM(i.amount) FROM Income i WHERE i.owner = :ownerId")
-    BigDecimal findTotalIncomesByOwnerId(@Param("ownerId") Long ownerId);
+    @Query("SELECT SUM(i.amount) FROM Income i WHERE i.owner.id = :ownerId")
+    Optional<BigDecimal> findTotalIncomesByOwnerId(@Param("ownerId") Long ownerId);
 
-    @Query("SELECT SUM(i.amount) FROM Income i WHERE i.owner = :ownerId AND i.transactionDate BETWEEN :s AND :e")
-    BigDecimal findTotalIncomesyOwnerIdBetween(@Param("ownerId") Long ownerId, @Param("s") LocalDateTime startDate, @Param("e") LocalDateTime endDate);
+    @Query("SELECT SUM(i.amount) FROM Income i WHERE i.owner.id = :ownerId AND i.transactionDate BETWEEN :s AND :e")
+    Optional<BigDecimal> findTotalIncomesByOwnerIdBetween(@Param("ownerId") Long ownerId, @Param("s") LocalDateTime startDate, @Param("e") LocalDateTime endDate);
 }

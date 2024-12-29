@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -98,11 +99,13 @@ public class IncomeService extends TransactionService implements IIncomeService 
 
     @Override
     public BigDecimal getTotal() {
-        return incomeRepository.findTotalIncomesByOwnerId(ownerId);
+        return incomeRepository.findTotalIncomesByOwnerId(ownerId).orElse(new BigDecimal(0));
     }
 
     @Override
-    public BigDecimal getTotalBetween(LocalDateTime startDate, LocalDateTime endDate) {
-        return incomeRepository.findTotalIncomesyOwnerIdBetween(ownerId, startDate, endDate);
+    public BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate) {
+        return incomeRepository.findTotalIncomesByOwnerIdBetween(ownerId,
+                LocalDateTime.of(startDate, LocalTime.of(23, 59, 59)),
+                LocalDateTime.of(endDate, LocalTime.of(23, 59, 59))).orElse(new BigDecimal(0));
     }
 }

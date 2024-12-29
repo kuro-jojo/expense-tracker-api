@@ -6,7 +6,6 @@ import com.kuro.expensetracker.requests.ExpenseRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IExpenseService {
@@ -31,5 +30,5 @@ public interface IExpenseService {
 
     BigDecimal getTotal();
 
-    BigDecimal getTotalBetween(LocalDateTime startDate, LocalDateTime endDate);
+    BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate);
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -99,11 +100,13 @@ public class ExpenseService extends TransactionService implements IExpenseServic
 
     @Override
     public BigDecimal getTotal() {
-        return expenseRepository.findTotalExpensesByOwnerId(ownerId);
+        return expenseRepository.findTotalExpensesByOwnerId(ownerId).orElse(new BigDecimal(0));
     }
 
     @Override
-    public BigDecimal getTotalBetween(LocalDateTime startDate, LocalDateTime endDate) {
-        return expenseRepository.findTotalExpensesByOwnerIdBetween(ownerId, startDate, endDate);
+    public BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate) {
+        return expenseRepository.findTotalExpensesByOwnerIdBetween(ownerId,
+                LocalDateTime.of(startDate, LocalTime.of(23, 59, 59)),
+                LocalDateTime.of(endDate, LocalTime.of(23, 59, 59))).orElse(new BigDecimal(0));
     }
 }

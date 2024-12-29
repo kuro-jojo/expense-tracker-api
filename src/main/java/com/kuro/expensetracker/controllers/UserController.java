@@ -26,14 +26,20 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserRequest request) throws EmailConfirmationException {
         String token = authenticationService.authenticate(request);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Token ", token));
+        ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+        response.addContent("token", token);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody UserRequest request) throws MessagingException {
         try {
             var user = authenticationService.register(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("User registered successfully. Email sent to " + user.getEmail(), user));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
+            response.setMessage("User registered successfully. Email sent to " + user.getEmail());
+            response.addContent("user", user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyPresentException(request.getEmail());
         }
@@ -42,7 +48,10 @@ public class UserController {
     @PostMapping("/resend-confirmation-link")
     public ResponseEntity<ApiResponse> resendConfirmationLink(@Valid @RequestBody UserRequest request) throws EmailConfirmationException, MessagingException {
         authenticationService.resendConfirmationLink(request);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Email resent to " + request.getEmail()));
+
+        ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+        response.setMessage("Email resent to " + request.getEmail());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/confirm-email")
@@ -60,19 +69,23 @@ public class UserController {
             @AuthenticationPrincipal User user) {
 
         if (request.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("Please provide a least one field to update"));
+            ApiResponse response = new ApiResponse(false, HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Please provide a least one field to update");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+
         request.setId(user.getId());
         userService.update(request);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("User updated successfully."));
+
+        ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+        response.setMessage("User updated successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/profile")
     public ResponseEntity<ApiResponse> deleteUser(
             @AuthenticationPrincipal User user) {
         userService.delete(user);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("User Deleted successfully."));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
-
 }

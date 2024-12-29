@@ -26,7 +26,10 @@ public class CategoryController {
             @Valid @RequestBody CategoryRequest request,
             @AuthenticationPrincipal User user) {
         categoryService.setOwnerId(user.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Category added successfully", categoryService.create(request)));
+        ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
+        response.setMessage("Category added successfully");
+        response.addContent("category", categoryService.create(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping()
@@ -40,7 +43,11 @@ public class CategoryController {
         } else {
             categories = categoryService.getAll();
         }
-        return ResponseEntity.ok(new ApiResponse(categories, categories.size()));
+
+        ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+        response.setTotal(categories.size());
+        response.addContent("categories", categories);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/{id}")
@@ -49,7 +56,9 @@ public class CategoryController {
             @AuthenticationPrincipal User user) {
         try {
             categoryService.setOwnerId(user.getId());
-            return ResponseEntity.ok(new ApiResponse(categoryService.getById(Long.valueOf(id))));
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.addContent("category", categoryService.getById(Long.valueOf(id)));
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid category id provided!");
         }
@@ -62,7 +71,10 @@ public class CategoryController {
             @AuthenticationPrincipal User user) {
         try {
             request.setOwner(user);
-            return ResponseEntity.ok(new ApiResponse("Category with id #" + id + " updated successfully!", categoryService.update(request, Long.valueOf(id))));
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.setMessage("Category with id #" + id + " updated successfully!");
+            response.addContent("category", categoryService.update(request, Long.valueOf(id)));
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid category id provided!");
         }

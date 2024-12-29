@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -29,7 +28,11 @@ public class ExpenseController {
     public ResponseEntity<ApiResponse> createExpense(@RequestBody @Valid ExpenseRequest request, @AuthenticationPrincipal User user) {
         request.setOwner(user);
         Expense expense = expenseService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Expense created successfully", expense));
+
+        ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
+        response.setMessage("Expense created successfully");
+        response.addContent("expense", expense);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
@@ -37,7 +40,10 @@ public class ExpenseController {
         try {
             expenseService.setOwnerId(user.getId());
             var expense = expenseService.getById(Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse(expense));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.addContent("expense", expense);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid expense id provided!");
         }
@@ -81,7 +87,11 @@ public class ExpenseController {
                         expenses = expenseService.getAll();
                 }
             }
-            return ResponseEntity.ok(new ApiResponse(expenses, expenses.size()));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.setTotal(expenses.size());
+            response.addContent("expenses", expenses);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }
@@ -95,11 +105,18 @@ public class ExpenseController {
     ) {
         try {
             if (request.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("No new value provided for update"));
+
+                ApiResponse response = new ApiResponse(false, HttpStatus.BAD_REQUEST.value());
+                response.setMessage("No new value provided for update");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             request.setOwner(user);
             var expense = expenseService.update(request, Long.valueOf(id));
-            return ResponseEntity.ok(new ApiResponse("Expense updated successfully", expense));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
+            response.setMessage("Expense updated successfully");
+            response.addContent("expense", expense);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid expense id provided!");
         }
@@ -113,7 +130,6 @@ public class ExpenseController {
             expenseService.setOwnerId(user.getId());
             expenseService.deleteById(Long.valueOf(id));
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-
         } catch (NumberFormatException e) {
             throw new InvalidValueException("Invalid expense id provided!");
         }
@@ -131,14 +147,17 @@ public class ExpenseController {
             BigDecimal total;
             if (startDate != null) {
                 if (endDate != null) {
-                    total = expenseService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.parse(endDate));
+                    total = expenseService.getTotalBetween(LocalDate.parse(startDate), LocalDate.parse(endDate));
                 } else {
-                    total = expenseService.getTotalBetween(LocalDateTime.parse(startDate), LocalDateTime.now());
+                    total = expenseService.getTotalBetween(LocalDate.parse(startDate), LocalDate.now());
                 }
             } else {
                 total = expenseService.getTotal();
             }
-            return ResponseEntity.ok(new ApiResponse(total));
+
+            ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+            response.addContent("total", total);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }
