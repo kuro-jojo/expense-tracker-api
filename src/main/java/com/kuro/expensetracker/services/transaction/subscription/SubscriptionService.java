@@ -13,48 +13,48 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-@Service
-public class SubscriptionService extends TransactionService implements ISubscriptionService {
-
-    private final SubscriptionRepository subscriptionRepository;
-
-    public SubscriptionService(TransactionRepository transactionRepository, CategoryRepository categoryRepository, SubscriptionRepository subscriptionRepository) {
-        super(transactionRepository, categoryRepository);
-        this.subscriptionRepository = subscriptionRepository;
-    }
-
-    @Override
-    public Subscription add(SubscriptionRequest request) {
-        Category category = super.categoryRepository.findByName(request.getCategory())
-                .orElseGet(() -> {
-                    Category newCategory = new Category(request.getCategory());
-                    return categoryRepository.save(newCategory);
-                });
-        // check the frequency
-        if (Arrays.stream(Frequency.values()).anyMatch(frequency -> frequency.name().equals(request.getFrequencyString()))) {
-            request.setFrequency(Frequency.valueOf(request.getFrequencyString()));
-        } else {
-            throw new EnumConstantNotPresentException(Frequency.class, request.getFrequencyString());
-        }
-
-        // check the due date
-        if (request.getDueDate().isBefore(LocalDate.now())) {
-            request.setIsActive(false);
-        }
-        return subscriptionRepository.save(createSubscription(request, category));
-    }
-
-    private Subscription createSubscription(SubscriptionRequest request, Category category) {
-        return new Subscription(
-                request.getTitle(),
-                request.getDescription(),
-                request.getAmount(),
-                category,
-                request.getTransactionDate(),
-                request.getOwner(),
-                request.getDueDate(),
-                request.getFrequency(),
-                request.getIsActive()
-        );
-    }
+//@Service
+public class SubscriptionService  {
+//
+//    private final SubscriptionRepository subscriptionRepository;
+//
+//    public SubscriptionService(TransactionRepository transactionRepository, CategoryRepository categoryRepository, SubscriptionRepository subscriptionRepository) {
+//        super(transactionRepository, categoryRepository);
+//        this.subscriptionRepository = subscriptionRepository;
+//    }
+//
+//    @Override
+//    public Subscription add(SubscriptionRequest request) {
+//        Category category = super.categoryRepository.findByName(request.getCategory())
+//                .orElseGet(() -> {
+//                    Category newCategory = new Category(request.getCategory());
+//                    return categoryRepository.save(newCategory);
+//                });
+//        // check the frequency
+//        if (Arrays.stream(Frequency.values()).anyMatch(frequency -> frequency.name().equals(request.getFrequencyString()))) {
+//            request.setFrequency(Frequency.valueOf(request.getFrequencyString()));
+//        } else {
+//            throw new EnumConstantNotPresentException(Frequency.class, request.getFrequencyString());
+//        }
+//
+//        // check the due date
+//        if (request.getDueDate().isBefore(LocalDate.now())) {
+//            request.setIsActive(false);
+//        }
+//        return subscriptionRepository.save(createSubscription(request, category));
+//    }
+//
+//    private Subscription createSubscription(SubscriptionRequest request, Category category) {
+//        return new Subscription(
+//                request.getTitle(),
+//                request.getDescription(),
+//                request.getAmount(),
+//                category,
+//                request.getTransactionDate(),
+//                request.getOwner(),
+//                request.getDueDate(),
+//                request.getFrequency(),
+//                request.getIsActive()
+//        );
+//    }
 }
