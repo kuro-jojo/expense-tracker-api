@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(JwtException.class)
     public ProblemDetail handleJwtExceptions(JwtException exception) {
-        logger.error("[JwtException - {}] Authentication failed : {}", exception.getClass().getSimpleName(), exception.getMessage());
+        logger.error("[JwtException - {}] Authentication failed: {}", exception.getClass().getSimpleName(), exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", "Invalid authentication token");
         errorDetail.setProperty("timestamp", Instant.now());
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SignatureException.class)
     public ProblemDetail handleSignatureException(SignatureException exception) {
-        logger.error("[SignatureException] Authentication failed : {}", exception.getMessage());
+        logger.error("[SignatureException] Authentication failed: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", "Invalid authentication token");
         errorDetail.setProperty("timestamp", Instant.now());
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailConfirmationException.class)
     public ProblemDetail handleEmailConfirmationException(EmailConfirmationException exception) {
-        logger.error("[EmailConfirmationException] Authentication failed : {}", exception.getMessage());
+        logger.error("[EmailConfirmationException] Authentication failed: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-        logger.error("[MethodArgumentNotValidException] Constraint violated {}", exception.getMessage());
+        logger.error("[MethodArgumentNotValidException] Constraint violated: {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid request parameter");
         exception.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidValueException.class)
     public ProblemDetail handleInvalidValueException(InvalidValueException exception) {
-        logger.error("Invalid value exception {}", exception.getMessage());
+        logger.error("[InvalidValueException] : {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid value");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -124,7 +124,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityAlreadyPresentException.class)
     public ProblemDetail handleEntityAlreadyPresentException(EntityAlreadyPresentException exception) {
-        logger.error(exception.getMessage());
+        logger.error("[EntityAlreadyPresentException] {}",exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -133,7 +133,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ProblemDetail handleEntityNotFoundException(EntityNotFoundException exception) {
-        logger.error(exception.getMessage());
+        logger.error("[EntityNotFoundException] {}",exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());

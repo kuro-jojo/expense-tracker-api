@@ -7,8 +7,10 @@ import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.TransactionRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.transaction.TransactionService;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -16,13 +18,18 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Setter
 public class TransactionController<T extends Transaction> {
     private final TransactionService<T> transactionService;
+    private final Logger logger = LoggerFactory.getLogger(TransactionController.class);
     private Class<T> type;
 
+    public TransactionController(TransactionService<T> transactionService) {
+        this.transactionService = transactionService;
+    }
 
     public ResponseEntity<ApiResponse> createTransaction(TransactionRequest request, User user) {
         request.setOwner(user);
@@ -30,8 +37,15 @@ public class TransactionController<T extends Transaction> {
 
         ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
 
-        response.setMessage(type.getSimpleName() + " has been created successfully");
-        response.addContent(type.getSimpleName(), transaction);
+        response.setMessage("Transaction (" + getClassType() + ") created successfully");
+        response.addContent(getClassType(), transaction);
+
+        logger.atInfo()
+                .addKeyValue("details",
+                        Map.of(getClassType() + "_id", transaction.getId(),
+                                getClassType() + "_title", transaction.getTitle()))
+                .log("[UUID={}] Transaction ({}) created successfully", user.getUuid(), getClassType());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -42,9 +56,16 @@ public class TransactionController<T extends Transaction> {
 
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.addContent(type.getSimpleName().toLowerCase() + "s", transaction);
+
+            logger.atInfo()
+                    .addKeyValue("details",
+                            Map.of(getClassType() + "_id", transaction.getId(),
+                                    getClassType() + "_title", transaction.getTitle()))
+                    .log("[UUID={}] Transaction ({}) retrieved successfully", user.getUuid(), getClassType());
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
-            throw new InvalidValueException(type.getSimpleName() + "with invalid id provided");
+            throw new InvalidValueException(type.getSimpleName() + " with invalid id provided");
         }
     }
 
@@ -87,6 +108,12 @@ public class TransactionController<T extends Transaction> {
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.setTotal(transactions.size());
             response.addContent(type.getSimpleName().toLowerCase() + "s", transactions);
+
+            logger.atInfo()
+                    .addKeyValue("details",
+                            Map.of(getClassType() + "s_total", transactions.size()))
+                    .log("[UUID={}] Transactions ({}s) retrieved successfully", user.getUuid(), getClassType());
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
@@ -107,9 +134,16 @@ public class TransactionController<T extends Transaction> {
             ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
             response.setMessage(type.getSimpleName() + " updated successfully");
             response.addContent(type.getSimpleName().toLowerCase(), transaction);
+
+            logger.atInfo()
+                    .addKeyValue("details",
+                            Map.of(getClassType() + "_id", transaction.getId(),
+                                    getClassType() + "_title", transaction.getTitle()))
+                    .log("[UUID={}] Transaction ({}) updated successfully", user.getUuid(), getClassType());
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (NumberFormatException e) {
-            throw new InvalidValueException(type.getSimpleName() + "with invalid id provided");
+            throw new InvalidValueException(type.getSimpleName() + " with invalid id provided");
         }
     }
 
@@ -117,9 +151,15 @@ public class TransactionController<T extends Transaction> {
         try {
             transactionService.setOwnerId(user.getId());
             transactionService.deleteById(Long.valueOf(id));
+
+            logger.atInfo()
+                    .addKeyValue("details",
+                            Map.of(getClassType() + "_id", id))
+                    .log("[UUID={}] Transaction ({}) created successfully", user.getUuid(), getClassType());
+
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (NumberFormatException e) {
-            throw new InvalidValueException(type.getSimpleName() + "with invalid id provided");
+            throw new InvalidValueException(type.getSimpleName() + " with invalid id provided");
         }
     }
 
@@ -139,9 +179,17 @@ public class TransactionController<T extends Transaction> {
 
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.addContent("total", total);
+
+            logger.atInfo()
+                    .log("[UUID={}] Transactions ({}s) total retrieved successfully", user.getUuid(), getClassType());
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }
+    }
+
+    private String getClassType() {
+        return type.getSimpleName().toLowerCase();
     }
 }

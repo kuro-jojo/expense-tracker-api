@@ -33,3 +33,4 @@ build/
 .vscode/
 class_diagram.drawio.png
 .env
+logs/

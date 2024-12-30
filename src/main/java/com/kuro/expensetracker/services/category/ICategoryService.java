@@ -15,6 +15,8 @@ public interface ICategoryService {
 
     void deleteById(Long id) throws EntityNotFoundException;
 
+    Category getByName(String name);
+
     Category getById(Long id) throws EntityNotFoundException;
 
     List<Category> getAll();

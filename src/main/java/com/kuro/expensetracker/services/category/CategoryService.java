@@ -21,7 +21,8 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public Category create(CategoryRequest request) throws EntityAlreadyPresentException, InvalidValueException {
-        categoryRepository.findByNameAndOwnerId(request.getName(), ownerId)
+        request.setName(request.getName().toLowerCase());
+        categoryRepository.findByNameAndOwnerId(request.getName(), request.getOwner().getId())
                 .ifPresent(category -> {
                             throw new EntityAlreadyPresentException(Category.class, request.getName());
                         }
@@ -43,6 +44,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public Category update(CategoryRequest request, Long categoryId) throws EntityNotFoundException, InvalidValueException {
+        request.setName(request.getName().toLowerCase());
         return categoryRepository.findByIdAndOwnerId(categoryId, request.getOwner().getId())
                 .map(existingCategory -> updateCategory(existingCategory, request))
                 .map(categoryRepository::save)
@@ -77,6 +79,13 @@ public class CategoryService implements ICategoryService {
                             throw new EntityNotFoundException(Category.class, id);
                         }
                 );
+    }
+
+    @Override
+    public Category getByName(String name) {
+        return categoryRepository.findByNameAndOwnerId(name, ownerId).orElseThrow(
+                () -> new EntityNotFoundException(Category.class, name)
+        );
     }
 
     @Override

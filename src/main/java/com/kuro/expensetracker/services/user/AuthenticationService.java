@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Currency;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -64,18 +65,18 @@ public class AuthenticationService implements IAuthenticationService {
     }
 
     @Override
-    public String authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {
+    public Map<String, Object> authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {
         var user = getUserToAuthenticate(request);
 
         if (!user.getIsVerified()) {
             throw new EmailConfirmationException("The email need to be confirmed");
         }
 
-        return jwtService.generateToken(user);
+        return Map.of("token", jwtService.generateToken(user), "user", user);
     }
 
     @Override
-    public void resendConfirmationLink(UserRequest request) throws BadCredentialsException, EmailConfirmationException, MessagingException {
+    public User resendConfirmationLink(UserRequest request) throws BadCredentialsException, EmailConfirmationException, MessagingException {
         var user = getUserToAuthenticate(request);
 
         if (user.getIsVerified()) {
@@ -86,6 +87,7 @@ public class AuthenticationService implements IAuthenticationService {
 
         var emailConfirmationToken = generateConfirmationToken(user);
         emailService.sendConfirmationEmail(emailConfirmationToken);
+        return user;
     }
 
     private User getUserToAuthenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {

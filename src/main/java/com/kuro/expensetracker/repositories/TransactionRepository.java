@@ -16,7 +16,6 @@ public interface TransactionRepository<T extends Transaction> extends JpaReposit
 
     List<T> findByOwnerIdAndCategoryName(Long ownerId, String categoryName);
 
-
     List<T> findByOwnerIdAndCategoryNameAndTransactionDateBetween(Long ownerId, String categoryName, LocalDateTime of, LocalDateTime of1);
 
     List<T> findByOwnerIdAndCategoryNameAndTransactionDateBefore(Long ownerId, String categoryName, LocalDateTime of);

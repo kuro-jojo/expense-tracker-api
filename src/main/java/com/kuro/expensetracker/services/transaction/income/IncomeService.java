@@ -4,9 +4,9 @@ import com.kuro.expensetracker.exceptions.EntityNotFoundException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.models.Income;
-import com.kuro.expensetracker.repositories.CategoryRepository;
 import com.kuro.expensetracker.repositories.IncomeRepository;
 import com.kuro.expensetracker.requests.TransactionRequest;
+import com.kuro.expensetracker.services.category.CategoryService;
 import com.kuro.expensetracker.services.transaction.TransactionService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -21,8 +21,8 @@ public class IncomeService extends TransactionService<Income> {
 
     private final IncomeRepository incomeRepository;
 
-    public IncomeService(CategoryRepository categoryRepository, IncomeRepository incomeRepository) {
-        super(incomeRepository, categoryRepository);
+    public IncomeService(CategoryService categoryService, IncomeRepository incomeRepository) {
+        super(incomeRepository, categoryService);
         this.incomeRepository = incomeRepository;
         setType(Income.class);
     }

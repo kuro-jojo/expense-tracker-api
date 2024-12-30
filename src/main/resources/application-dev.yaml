@@ -1,0 +1,12 @@
+spring:
+    jpa:
+        show-sql: false
+
+logging:
+    level:
+        root: WARN
+        com.kuro: INFO
+security:
+    jwt:
+        # 24h in millisecond
+        expiration-time: 84600000

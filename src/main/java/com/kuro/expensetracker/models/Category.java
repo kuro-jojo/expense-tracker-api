@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"name", "owner"}))
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

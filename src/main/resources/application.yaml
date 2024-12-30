@@ -9,7 +9,7 @@ spring:
         #        database-platform: org.hibernate.dialect.MySQLDialect
         hibernate:
             ddl-auto: update
-        show-sql: true
+
     mail:
         host: smtp.gmail.com
         port: 587
@@ -33,8 +33,7 @@ api:
 
 logging:
     level:
-        org.springframework.security: TRACE
-
+        com.kuro: INFO
 security:
     jwt:
         secret-key: ${JWT_SECRET_KEY}

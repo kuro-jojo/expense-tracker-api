@@ -8,12 +8,14 @@ import com.kuro.expensetracker.requests.UserRequest;
 import jakarta.mail.MessagingException;
 import org.springframework.security.authentication.BadCredentialsException;
 
+import java.util.Map;
+
 public interface IAuthenticationService {
     User register(UserRequest request) throws InvalidValueException, MessagingException;
 
-    String authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException;
+    Map<String, Object> authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException;
 
-    void resendConfirmationLink(UserRequest request) throws BadCredentialsException, EmailConfirmationException, MessagingException;
+    User resendConfirmationLink(UserRequest request) throws BadCredentialsException, EmailConfirmationException, MessagingException;
 
     EmailConfirmationToken generateConfirmationToken(User user);
 
