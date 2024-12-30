@@ -4,6 +4,7 @@ import com.kuro.expensetracker.exceptions.EntityAlreadyPresentException;
 import com.kuro.expensetracker.exceptions.EntityNotFoundException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Category;
+import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.repositories.CategoryRepository;
 import com.kuro.expensetracker.requests.CategoryRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,7 @@ class CategoryServiceTest {
     @Test
     public void createCategory_withValidRequest_shouldReturnCategory() {
         CategoryRequest categoryRequest = CategoryRequest.builder()
+                .owner(new User(ownerId))
                 .name("sport")
                 .description("For sports transactions")
                 .threshold(new BigDecimal(200))
@@ -65,6 +67,7 @@ class CategoryServiceTest {
     @Test
     public void createCategory_withInvalidRequest_forNegativeThreshold_shouldThrowInvalidValueException() {
         CategoryRequest categoryRequest = CategoryRequest.builder()
+                .owner(new User(ownerId))
                 .name("sport")
                 .description("For sports transactions")
                 .threshold(new BigDecimal(200).negate())
@@ -79,6 +82,7 @@ class CategoryServiceTest {
     @Test
     public void createCategory_withExistingCategory_shouldThrowEntityAlreadyPresentException() {
         CategoryRequest categoryRequest = CategoryRequest.builder()
+                .owner(new User(ownerId))
                 .name("sport")
                 .description("For sports transactions")
                 .threshold(new BigDecimal(200))
