@@ -127,7 +127,7 @@ class AuthenticationServiceTest {
         when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(authentication);
         when(jwtService.generateToken(any(User.class))).thenReturn(expectedToken);
 
-        String tokenString = authenticationService.authenticate(request);
+        String tokenString = authenticationService.authenticate(request).get("token").toString();
         assertNotNull(tokenString);
         assertEquals(expectedToken, tokenString);
     }
