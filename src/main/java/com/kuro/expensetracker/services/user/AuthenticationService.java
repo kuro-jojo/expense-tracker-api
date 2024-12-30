@@ -144,6 +144,7 @@ public class AuthenticationService implements IAuthenticationService {
         }
 
         user.setIsVerified(true);
+        user.setEmailConfirmationToken(null);
         userRepository.save(user);
         emailConfirmationTokenRepository.delete(emailConfirmationToken);
         return true;
