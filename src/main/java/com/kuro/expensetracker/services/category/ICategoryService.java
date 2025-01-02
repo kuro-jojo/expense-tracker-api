@@ -21,5 +21,5 @@ public interface ICategoryService {
 
     List<Category> getAll();
 
-    List<Category> getAllWithNameOnly();
+    List<String> getAllWithNameOnly();
 }

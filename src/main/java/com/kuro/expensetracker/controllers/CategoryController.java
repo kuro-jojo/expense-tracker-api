@@ -1,7 +1,6 @@
 package com.kuro.expensetracker.controllers;
 
 import com.kuro.expensetracker.exceptions.InvalidValueException;
-import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.CategoryRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
@@ -49,7 +48,7 @@ public class CategoryController {
             @RequestParam(required = false) boolean namesOnly,
             @AuthenticationPrincipal User user) {
         categoryService.setOwnerId(user.getId());
-        List<Category> categories;
+        List<?> categories;
         if (namesOnly) {
             categories = categoryService.getAllWithNameOnly();
         } else {

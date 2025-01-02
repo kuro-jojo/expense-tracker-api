@@ -101,11 +101,11 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public List<Category> getAllWithNameOnly() {
+    public List<String> getAllWithNameOnly() {
         var categories = categoryRepository.findByOwnerId(ownerId);
 
         return categories.stream()
-                .map(category -> new Category(category.getName()))
+                .map(Category::getName)
                 .toList();
     }
 }
