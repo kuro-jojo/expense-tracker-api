@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -141,8 +142,8 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
     }
 
     @Override
-    public List<T> getAll() {
-        return transactionRepository.findByOwnerId(ownerId);
+    public List<T> getAll(Pageable pageable) {
+        return transactionRepository.findByOwnerId(ownerId, pageable);
     }
 
 

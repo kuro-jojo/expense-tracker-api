@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,13 +47,14 @@ public class CategoryController {
     @GetMapping()
     public ResponseEntity<ApiResponse> getAllCategories(
             @RequestParam(required = false) boolean namesOnly,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal User user,
+            Pageable pageable) {
         categoryService.setOwnerId(user.getId());
         List<?> categories;
         if (namesOnly) {
-            categories = categoryService.getAllWithNameOnly();
+            categories = categoryService.getAllWithNameOnly(pageable);
         } else {
-            categories = categoryService.getAll();
+            categories = categoryService.getAll(pageable);
         }
 
         ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());

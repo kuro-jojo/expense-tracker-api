@@ -6,7 +6,7 @@ import com.kuro.expensetracker.requests.IncomeRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.transaction.income.IncomeService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -39,9 +39,9 @@ public class IncomeController extends TransactionController<Income> {
             @RequestParam(required = false, value = "a") String afterDate,
             @RequestParam(required = false, value = "s") String startDate,
             @RequestParam(required = false, value = "e") String endDate,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal User user, Pageable pageable) {
         return super.getTransactionByCategoryFilteredByDate(
-                categoryName, beforeDate, afterDate, startDate, endDate, user);
+                categoryName, beforeDate, afterDate, startDate, endDate, user, pageable);
     }
 
     @PatchMapping("/{id}")

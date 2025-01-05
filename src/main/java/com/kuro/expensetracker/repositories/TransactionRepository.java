@@ -1,6 +1,7 @@
 package com.kuro.expensetracker.repositories;
 
 import com.kuro.expensetracker.models.Transaction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ public interface TransactionRepository<T extends Transaction> extends JpaReposit
             Long transactionId,
             Long ownerId);
 
-    List<T> findByOwnerId(Long ownerId);
+    List<T> findByOwnerId(Long ownerId, Pageable pageable);
 
     List<T> findByOwnerIdAndCategoryName(Long ownerId, String categoryName);
 

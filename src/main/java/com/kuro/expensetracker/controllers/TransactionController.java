@@ -7,10 +7,10 @@ import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.TransactionRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.transaction.TransactionService;
-import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -69,7 +69,14 @@ public class TransactionController<T extends Transaction> {
         }
     }
 
-    public ResponseEntity<ApiResponse> getTransactionByCategoryFilteredByDate(String categoryName, String beforeDate, String afterDate, String startDate, String endDate, User user) {
+    public ResponseEntity<ApiResponse> getTransactionByCategoryFilteredByDate(
+            String categoryName,
+            String beforeDate,
+            String afterDate,
+            String startDate,
+            String endDate,
+            User user,
+            Pageable pageable) {
         try {
             transactionService.setOwnerId(user.getId());
 
@@ -101,7 +108,7 @@ public class TransactionController<T extends Transaction> {
                 } else if (afterDate != null) {
                     transactions = transactionService.getByDateAfter(LocalDate.parse(afterDate));
                 } else {
-                    transactions = transactionService.getAll();
+                    transactions = transactionService.getAll(pageable);
                 }
             }
 

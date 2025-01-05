@@ -5,6 +5,7 @@ import com.kuro.expensetracker.exceptions.EntityNotFoundException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.requests.CategoryRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface ICategoryService {
 
     Category getById(Long id) throws EntityNotFoundException;
 
-    List<Category> getAll();
+    List<Category> getAll(Pageable pageable);
 
-    List<String> getAllWithNameOnly();
+    List<String> getAllWithNameOnly(Pageable pageable);
 }

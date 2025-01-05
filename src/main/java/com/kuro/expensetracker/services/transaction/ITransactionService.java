@@ -4,6 +4,7 @@ import com.kuro.expensetracker.exceptions.EntityNotFoundException;
 import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.models.Transaction;
 import com.kuro.expensetracker.requests.TransactionRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public interface ITransactionService<T extends Transaction> {
 
     T getById(Long id) throws EntityNotFoundException;
 
-    List<T> getAll();
+    List<T> getAll(Pageable pageable);
 
     List<T> getByCategory(String categoryName);
 

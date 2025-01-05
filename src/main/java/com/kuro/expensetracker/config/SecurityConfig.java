@@ -1,6 +1,7 @@
 package com.kuro.expensetracker.config;
 
 import com.kuro.expensetracker.auth.JwtAuthenticationFilter;
+import com.kuro.expensetracker.filters.config.RequestLoggingFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthenticationFilter(), AuthorizationFilter.class)
+                .addFilterBefore(new RequestLoggingFilter(), AuthorizationFilter.class)
                 .build();
     }
 

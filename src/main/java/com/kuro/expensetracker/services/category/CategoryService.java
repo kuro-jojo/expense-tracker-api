@@ -8,6 +8,7 @@ import com.kuro.expensetracker.repositories.CategoryRepository;
 import com.kuro.expensetracker.requests.CategoryRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -96,13 +97,13 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public List<Category> getAll() {
-        return categoryRepository.findByOwnerId(ownerId);
+    public List<Category> getAll(Pageable pageable) {
+        return categoryRepository.findByOwnerId(ownerId, pageable);
     }
 
     @Override
-    public List<String> getAllWithNameOnly() {
-        var categories = categoryRepository.findByOwnerId(ownerId);
+    public List<String> getAllWithNameOnly(Pageable pageable) {
+        var categories = categoryRepository.findByOwnerId(ownerId, pageable);
 
         return categories.stream()
                 .map(Category::getName)
