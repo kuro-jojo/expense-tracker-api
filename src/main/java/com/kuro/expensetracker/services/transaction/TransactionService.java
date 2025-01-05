@@ -10,6 +10,8 @@ import com.kuro.expensetracker.requests.ExpenseRequest;
 import com.kuro.expensetracker.requests.IncomeRequest;
 import com.kuro.expensetracker.requests.TransactionRequest;
 import com.kuro.expensetracker.services.category.CategoryService;
+import com.kuro.expensetracker.utils.DateTimeUtil;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -20,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -44,11 +45,9 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
         if (request.getAmount() == null) {
             throw new InvalidValueException("Amount cannot be empty!");
         }
-        if (request instanceof IncomeRequest && request.getAmount().signum() < 0) {
-            throw new InvalidValueException("Amount cannot be a negative value!");
-        }
-        if (request instanceof ExpenseRequest && request.getAmount().signum() > 0) {
-            throw new InvalidValueException("Amount cannot be a positive value!");
+        if ((request instanceof IncomeRequest && request.getAmount().signum() < 0) ||
+                (request instanceof ExpenseRequest && request.getAmount().signum() > 0)) {
+            request.setAmount(request.getAmount().negate());
         }
 
         categoryService.setOwnerId(request.getOwner().getId());
@@ -148,52 +147,107 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
 
 
     @Override
-    public List<T> getByCategory(String categoryName) {
-        return transactionRepository.findByOwnerIdAndCategoryName(ownerId, categoryName);
+    public List<T> getByCategory(String categoryName, Pageable pageable) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return getAll(pageable);
+        }
+        return transactionRepository.findByOwnerIdAndCategoryName(ownerId, categoryName, pageable);
     }
 
     @Override
-    public List<T> getByCategoryAndDateBetween(String categoryName, LocalDate startDate, LocalDate endDate) {
+    public List<T> getByCategoryAndDateBetween(@Nullable String categoryName, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return transactionRepository.findByOwnerIdAndTransactionDateBetween(
+                    ownerId,
+                    DateTimeUtil.getStartOfDay(startDate),
+                    DateTimeUtil.getEndOfDay(endDate),
+                    pageable);
+        }
         return transactionRepository.findByOwnerIdAndCategoryNameAndTransactionDateBetween(
                 ownerId,
                 categoryName,
-                LocalDateTime.of(startDate, LocalTime.of(0, 0, 0)),
-                LocalDateTime.of(endDate, LocalTime.of(23, 59, 59)));
+                DateTimeUtil.getStartOfDay(startDate),
+                DateTimeUtil.getEndOfDay(endDate),
+                pageable);
     }
 
     @Override
-    public List<T> getByCategoryAndDateBefore(String categoryName, LocalDate beforeDate) {
+    public List<T> getByCategoryAndDateBefore(@Nullable String categoryName, LocalDate beforeDate, Pageable pageable) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return transactionRepository.findByOwnerIdAndTransactionDateBefore(
+                    ownerId,
+                    DateTimeUtil.getEndOfDay(beforeDate),
+                    pageable);
+        }
         return transactionRepository.findByOwnerIdAndCategoryNameAndTransactionDateBefore(
                 ownerId,
                 categoryName,
-                LocalDateTime.of(beforeDate, LocalTime.of(23, 59, 59)));
+                DateTimeUtil.getEndOfDay(beforeDate),
+                pageable);
     }
 
     @Override
-    public List<T> getByCategoryAndDateAfter(String categoryName, LocalDate afterDate) {
+    public List<T> getByCategoryAndDateAfter(@Nullable String categoryName, LocalDate afterDate, Pageable pageable) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return transactionRepository.findByOwnerIdAndTransactionDateAfter(
+                    ownerId,
+                    DateTimeUtil.getStartOfDay(afterDate),
+                    pageable);
+        }
         return transactionRepository.findByOwnerIdAndCategoryNameAndTransactionDateAfter(
                 ownerId,
                 categoryName,
-                LocalDateTime.of(afterDate, LocalTime.of(0, 0, 0)));
+                DateTimeUtil.getStartOfDay(afterDate),
+                pageable);
     }
 
     @Override
-    public List<T> getByDateBetween(LocalDate startDate, LocalDate endDate) {
-        return transactionRepository.findByOwnerIdAndTransactionDateBetween(ownerId,
-                LocalDateTime.of(startDate, LocalTime.of(0, 0, 0)),
-                LocalDateTime.of(endDate, LocalTime.of(23, 59, 59)));
+    public List<T> getByCategoryAndDateWeek(String categoryName, Pageable pageable) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return transactionRepository.findByOwnerIdAndTransactionDateBetween(
+                    ownerId,
+                    DateTimeUtil.getStartOfWeek(),
+                    DateTimeUtil.getEndOfWeek(),
+                    pageable);
+        }
+        return transactionRepository.findByOwnerIdAndCategoryNameAndTransactionDateBetween(
+                ownerId,
+                categoryName,
+                DateTimeUtil.getStartOfWeek(),
+                DateTimeUtil.getEndOfWeek(),
+                pageable);
     }
 
     @Override
-    public List<T> getByDateBefore(LocalDate dateBefore) {
-        return transactionRepository.findByOwnerIdAndTransactionDateBefore(ownerId,
-                LocalDateTime.of(dateBefore, LocalTime.of(23, 59, 59)));
+    public List<T> getByCategoryAndDateYear(String categoryName, Pageable pageable) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return transactionRepository.findByOwnerIdAndTransactionDateBetween(
+                    ownerId,
+                    DateTimeUtil.getFirstDayOfYear(),
+                    DateTimeUtil.getLastDayOfYear(),
+                    pageable);
+        }
+        return transactionRepository.findByOwnerIdAndCategoryNameAndTransactionDateBetween(
+                ownerId,
+                categoryName,
+                DateTimeUtil.getFirstDayOfYear(),
+                DateTimeUtil.getLastDayOfYear(),
+                pageable);
     }
 
     @Override
-    public List<T> getByDateAfter(LocalDate afterDate) {
-        return transactionRepository.findByOwnerIdAndTransactionDateAfter(ownerId,
-                LocalDateTime.of(afterDate, LocalTime.of(0, 0, 0)));
+    public List<T> getByCategoryAndDateToday(String categoryName, Pageable pageable) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return transactionRepository.findByOwnerIdAndTransactionDateAfter(
+                    ownerId,
+                    DateTimeUtil.getStartOfToday(),
+                    pageable);
+        }
+        return transactionRepository.findByOwnerIdAndCategoryNameAndTransactionDateAfter(
+                ownerId,
+                categoryName,
+                DateTimeUtil.getEndOfToday(),
+                pageable);
     }
 
     @Override

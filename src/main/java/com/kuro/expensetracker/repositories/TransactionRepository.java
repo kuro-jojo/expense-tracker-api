@@ -15,17 +15,17 @@ public interface TransactionRepository<T extends Transaction> extends JpaReposit
 
     List<T> findByOwnerId(Long ownerId, Pageable pageable);
 
-    List<T> findByOwnerIdAndCategoryName(Long ownerId, String categoryName);
+    List<T> findByOwnerIdAndCategoryName(Long ownerId, String categoryName, Pageable pageable);
 
-    List<T> findByOwnerIdAndCategoryNameAndTransactionDateBetween(Long ownerId, String categoryName, LocalDateTime of, LocalDateTime of1);
+    List<T> findByOwnerIdAndCategoryNameAndTransactionDateBetween(Long ownerId, String categoryName, LocalDateTime of, LocalDateTime of1, Pageable pageable);
 
-    List<T> findByOwnerIdAndCategoryNameAndTransactionDateBefore(Long ownerId, String categoryName, LocalDateTime of);
+    List<T> findByOwnerIdAndCategoryNameAndTransactionDateBefore(Long ownerId, String categoryName, LocalDateTime of, Pageable pageable);
 
-    List<T> findByOwnerIdAndCategoryNameAndTransactionDateAfter(Long ownerId, String categoryName, LocalDateTime of);
+    List<T> findByOwnerIdAndCategoryNameAndTransactionDateAfter(Long ownerId, String categoryName, LocalDateTime of, Pageable pageable);
 
-    List<T> findByOwnerIdAndTransactionDateBetween(Long ownerId, LocalDateTime of, LocalDateTime of1);
+    List<T> findByOwnerIdAndTransactionDateBetween(Long ownerId, LocalDateTime of, LocalDateTime of1, Pageable pageable);
 
-    List<T> findByOwnerIdAndTransactionDateBefore(Long ownerId, LocalDateTime of);
+    List<T> findByOwnerIdAndTransactionDateBefore(Long ownerId, LocalDateTime of, Pageable pageable);
 
-    List<T> findByOwnerIdAndTransactionDateAfter(Long ownerId, LocalDateTime of);
+    List<T> findByOwnerIdAndTransactionDateAfter(Long ownerId, LocalDateTime of, Pageable pageable);
 }

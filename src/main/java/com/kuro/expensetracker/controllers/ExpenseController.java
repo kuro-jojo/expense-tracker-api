@@ -39,10 +39,11 @@ public class ExpenseController extends TransactionController<Expense> {
             @RequestParam(required = false, value = "a") String afterDate,
             @RequestParam(required = false, value = "s") String startDate,
             @RequestParam(required = false, value = "e") String endDate,
+            @RequestParam(required = false, value = "period") String period,
             @AuthenticationPrincipal User user,
             Pageable pageable) {
         return super.getTransactionByCategoryFilteredByDate(
-                categoryName, beforeDate, afterDate, startDate, endDate, user, pageable);
+                categoryName, beforeDate, afterDate, startDate, endDate, period, user, pageable);
     }
 
     @PatchMapping("/{id}")

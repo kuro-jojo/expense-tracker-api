@@ -50,6 +50,7 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PaymentMode> paymentModes;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private EmailConfirmationToken emailConfirmationToken;
 

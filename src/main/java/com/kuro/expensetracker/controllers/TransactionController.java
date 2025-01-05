@@ -75,6 +75,7 @@ public class TransactionController<T extends Transaction> {
             String afterDate,
             String startDate,
             String endDate,
+            String period,
             User user,
             Pageable pageable) {
         try {
@@ -82,34 +83,25 @@ public class TransactionController<T extends Transaction> {
 
             List<T> transactions;
 
-            if (categoryName != null) {
-                if (startDate != null && endDate != null) {
-                    transactions = transactionService.getByCategoryAndDateBetween(categoryName, LocalDate.parse(startDate), LocalDate.parse(endDate));
-                } else if (startDate != null) {
-                    transactions = transactionService.getByCategoryAndDateBetween(categoryName, LocalDate.parse(startDate), LocalDate.now());
-                } else if (endDate != null) {
-                    transactions = transactionService.getByCategoryAndDateBetween(categoryName, LocalDate.now(), LocalDate.parse(endDate));
-                } else if (beforeDate != null) {
-                    transactions = transactionService.getByCategoryAndDateBefore(categoryName, LocalDate.parse(beforeDate));
-                } else if (afterDate != null) {
-                    transactions = transactionService.getByCategoryAndDateAfter(categoryName, LocalDate.parse(afterDate));
-                } else {
-                    transactions = transactionService.getByCategory(categoryName);
-                }
+            if (startDate != null && endDate != null && !startDate.isBlank() && !endDate.isBlank()) {
+                transactions = transactionService.getByCategoryAndDateBetween(categoryName, LocalDate.parse(startDate), LocalDate.parse(endDate), pageable);
+            } else if (startDate != null && !startDate.isBlank()) {
+                transactions = transactionService.getByCategoryAndDateBetween(categoryName, LocalDate.parse(startDate), LocalDate.now(), pageable);
+            } else if (endDate != null && !endDate.isBlank()) {
+                transactions = transactionService.getByCategoryAndDateBetween(categoryName, LocalDate.now(), LocalDate.parse(endDate), pageable);
+            } else if (beforeDate != null && !beforeDate.isBlank()) {
+                transactions = transactionService.getByCategoryAndDateBefore(categoryName, LocalDate.parse(beforeDate), pageable);
+            } else if (afterDate != null && !afterDate.isBlank()) {
+                transactions = transactionService.getByCategoryAndDateAfter(categoryName, LocalDate.parse(afterDate), pageable);
+            } else if (period != null && !period.isBlank()) {
+                transactions = switch (period) {
+                    case "today" -> transactionService.getByCategoryAndDateToday(categoryName, pageable);
+                    case "week" -> transactionService.getByCategoryAndDateWeek(categoryName, pageable);
+                    case "year" -> transactionService.getByCategoryAndDateYear(categoryName, pageable);
+                    default -> transactionService.getByCategory(categoryName, pageable);
+                };
             } else {
-                if (startDate != null && endDate != null) {
-                    transactions = transactionService.getByDateBetween(LocalDate.parse(startDate), LocalDate.parse(endDate));
-                } else if (startDate != null) {
-                    transactions = transactionService.getByDateBetween(LocalDate.parse(startDate), LocalDate.now());
-                } else if (endDate != null) {
-                    transactions = transactionService.getByDateBetween(LocalDate.now(), LocalDate.parse(endDate));
-                } else if (beforeDate != null) {
-                    transactions = transactionService.getByDateBefore(LocalDate.parse(beforeDate));
-                } else if (afterDate != null) {
-                    transactions = transactionService.getByDateAfter(LocalDate.parse(afterDate));
-                } else {
-                    transactions = transactionService.getAll(pageable);
-                }
+                transactions = transactionService.getByCategory(categoryName, pageable);
             }
 
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());

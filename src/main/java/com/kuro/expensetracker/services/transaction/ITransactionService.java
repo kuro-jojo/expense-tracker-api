@@ -23,21 +23,21 @@ public interface ITransactionService<T extends Transaction> {
 
     List<T> getAll(Pageable pageable);
 
-    List<T> getByCategory(String categoryName);
+    List<T> getByCategory(String categoryName, Pageable pageable);
 
-    List<T> getByCategoryAndDateBetween(String categoryName, LocalDate startDate, LocalDate endDate);
+    List<T> getByCategoryAndDateBetween(String categoryName, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    List<T> getByCategoryAndDateBefore(String categoryName, LocalDate beforeDate);
+    List<T> getByCategoryAndDateBefore(String categoryName, LocalDate beforeDate, Pageable pageable);
 
-    List<T> getByCategoryAndDateAfter(String categoryName, LocalDate afterDate);
-
-    List<T> getByDateBetween(LocalDate startDate, LocalDate endDate);
-
-    List<T> getByDateBefore(LocalDate dateBefore);
-
-    List<T> getByDateAfter(LocalDate afterDate);
+    List<T> getByCategoryAndDateAfter(String categoryName, LocalDate afterDate, Pageable pageable);
 
     BigDecimal getTotal();
 
     BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate);
+
+    List<T> getByCategoryAndDateWeek(String categoryName, Pageable pageable);
+
+    List<T> getByCategoryAndDateYear(String categoryName, Pageable pageable);
+
+    List<T> getByCategoryAndDateToday(String categoryName, Pageable pageable);
 }
