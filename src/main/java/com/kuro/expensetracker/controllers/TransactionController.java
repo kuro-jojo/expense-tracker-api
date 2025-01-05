@@ -31,7 +31,7 @@ public class TransactionController<T extends Transaction> {
         this.transactionService = transactionService;
     }
 
-    public ResponseEntity<ApiResponse> createTransaction(TransactionRequest request, User user) {
+    public <R extends TransactionRequest> ResponseEntity<ApiResponse> createTransaction(R request, User user) {
         request.setOwner(user);
         T transaction = transactionService.create(request);
 

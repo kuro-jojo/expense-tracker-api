@@ -41,7 +41,7 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
     }
 
     @Override
-    public T create(TransactionRequest request) throws InvalidValueException {
+    public <R extends TransactionRequest> T create(R request) throws InvalidValueException {
         if (request.getAmount() == null) {
             throw new InvalidValueException("Amount cannot be empty!");
         }

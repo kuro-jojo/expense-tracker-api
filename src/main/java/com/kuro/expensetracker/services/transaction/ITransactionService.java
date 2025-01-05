@@ -1,6 +1,7 @@
 package com.kuro.expensetracker.services.transaction;
 
 import com.kuro.expensetracker.exceptions.EntityNotFoundException;
+import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.models.Transaction;
 import com.kuro.expensetracker.requests.TransactionRequest;
@@ -11,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface ITransactionService<T extends Transaction> {
-    T create(TransactionRequest request);
+    <R extends TransactionRequest> T create(R request) throws InvalidValueException;
 
     T createFromRequest(TransactionRequest request, Category category);
 

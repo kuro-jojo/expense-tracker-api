@@ -8,13 +8,12 @@ import com.kuro.expensetracker.repositories.ExpenseRepository;
 import com.kuro.expensetracker.requests.TransactionRequest;
 import com.kuro.expensetracker.services.category.CategoryService;
 import com.kuro.expensetracker.services.transaction.TransactionService;
+import com.kuro.expensetracker.utils.DateTimeUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Service
 public class ExpenseService extends TransactionService<Expense> {
@@ -60,7 +59,7 @@ public class ExpenseService extends TransactionService<Expense> {
     @Override
     public BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate) {
         return expenseRepository.findTotalExpensesByOwnerIdBetween(ownerId,
-                LocalDateTime.of(startDate, LocalTime.of(0, 0, 0)),
-                LocalDateTime.of(endDate, LocalTime.of(23, 59, 59))).orElse(new BigDecimal(0));
+                DateTimeUtil.getStartOfDay(startDate),
+                DateTimeUtil.getEndOfDay(endDate)).orElse(new BigDecimal(0));
     }
 }
