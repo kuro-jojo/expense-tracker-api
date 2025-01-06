@@ -16,7 +16,7 @@ public interface ITransactionService<T extends Transaction> {
 
     T createFromRequest(TransactionRequest request, Category category);
 
-    T update(TransactionRequest request, Long transactionId) throws EntityNotFoundException;
+    <R extends TransactionRequest> T update(R request, Long transactionId) throws EntityNotFoundException;
 
     void deleteById(Long id) throws EntityNotFoundException;
 

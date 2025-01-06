@@ -97,7 +97,7 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
     }
 
     @Override
-    public T update(TransactionRequest request, Long transactionId) throws EntityNotFoundException {
+    public <R extends TransactionRequest> T update(R request, Long transactionId) throws EntityNotFoundException {
         return transactionRepository.findByIdAndOwnerId(transactionId, request.getOwner().getId())
                 .map(existingTransaction -> {
                     if (request.getTitle() != null && !request.getTitle().isBlank()) {

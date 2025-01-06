@@ -30,4 +30,7 @@ public interface SubscriptionRepository extends TransactionRepository<Subscripti
     List<Subscription> findByOwnerIdAndDueDate(Long ownerId, LocalDate dueDate);
 
     List<Subscription> findByOwnerIdAndIsActive(Long ownerId, Boolean isActive);
+
+    @Query("SELECT s FROM Subscription s WHERE s.isActive = true AND s.dueDate <= DATE(NOW())")
+    List<Subscription> findOverdueSubscriptions();
 }

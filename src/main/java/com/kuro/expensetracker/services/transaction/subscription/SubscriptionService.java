@@ -5,6 +5,7 @@ import com.kuro.expensetracker.exceptions.EntityNotFoundException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.models.Subscription;
+import com.kuro.expensetracker.models.Transaction;
 import com.kuro.expensetracker.repositories.SubscriptionRepository;
 import com.kuro.expensetracker.requests.SubscriptionRequest;
 import com.kuro.expensetracker.requests.TransactionRequest;
@@ -51,7 +52,14 @@ public class SubscriptionService extends TransactionService<Subscription> implem
         );
     }
 
-    public Subscription createSubscriptionFromRequest(SubscriptionRequest request, Subscription subscription) {
+    @Override
+    public <R extends TransactionRequest> Subscription update(R request, Long incomeId) throws EntityNotFoundException {
+        var subscription = super.update((TransactionRequest) request, incomeId);
+        createSubscriptionFromRequest((SubscriptionRequest) request, subscription);
+        return subscriptionRepository.save(subscription);
+    }
+
+    private Subscription createSubscriptionFromRequest(SubscriptionRequest request, Subscription subscription) {
         try {
             if (request.getFrequency() == null || request.getFrequency().isBlank()) {
                 subscription.setFrequency(Frequency.ONCE);
@@ -66,11 +74,6 @@ public class SubscriptionService extends TransactionService<Subscription> implem
         }
     }
 
-    @Override
-    public Subscription update(TransactionRequest request, Long incomeId) throws EntityNotFoundException {
-        var subscription = super.update(request, incomeId);
-        return subscriptionRepository.save(subscription);
-    }
 
     @Override
     public BigDecimal getTotal() {
@@ -126,5 +129,16 @@ public class SubscriptionService extends TransactionService<Subscription> implem
         return subscriptionRepository.findByOwnerIdAndDueDate(
                 ownerId,
                 dueDate);
+    }
+
+    @Override
+    public List<Long> updateOverdueSubscriptions() {
+        // Get all subscriptions that have passed their due date
+        List<Subscription> subscriptions = subscriptionRepository.findOverdueSubscriptions();
+
+        subscriptions.forEach(subscription -> subscription.setIsActive(false));
+        subscriptionRepository.saveAll(subscriptions);
+
+        return subscriptions.stream().map(Transaction::getId).toList();
     }
 }

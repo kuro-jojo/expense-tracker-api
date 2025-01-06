@@ -13,4 +13,6 @@ public interface ISubscriptionService {
     List<Subscription> getByActive(Boolean isActive);
 
     List<Subscription> getByCategoryAndDueDate(String categoryName, LocalDate dueDate);
+
+    List<Long> updateOverdueSubscriptions();
 }

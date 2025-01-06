@@ -1,4 +1,4 @@
-package com.kuro.expensetracker.filters.config;
+package com.kuro.expensetracker.filters;
 
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
