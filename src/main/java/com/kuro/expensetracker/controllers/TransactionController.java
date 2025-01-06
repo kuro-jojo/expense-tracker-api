@@ -97,7 +97,7 @@ public class TransactionController<T extends Transaction> {
                     case "today" -> transactionService.getByCategoryAndDateToday(categoryName, pageable);
                     case "week" -> transactionService.getByCategoryAndDateWeek(categoryName, pageable);
                     case "year" -> transactionService.getByCategoryAndDateYear(categoryName, pageable);
-                    default -> transactionService.getByCategory(categoryName, pageable);
+                    default -> throw new InvalidValueException("Period argument should be one of these values [today, week, year]");
                 };
             } else {
                 transactions = transactionService.getByCategory(categoryName, pageable);

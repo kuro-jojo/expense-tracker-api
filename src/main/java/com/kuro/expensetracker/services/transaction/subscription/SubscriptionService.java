@@ -59,6 +59,11 @@ public class SubscriptionService extends TransactionService<Subscription> implem
         return subscriptionRepository.save(subscription);
     }
 
+    @Override
+    public List<Subscription> getByFrequency(Frequency frequency) {
+        return subscriptionRepository.findByOwnerIdAndFrequency(ownerId, frequency);
+    }
+
     private Subscription createSubscriptionFromRequest(SubscriptionRequest request, Subscription subscription) {
         try {
             if (request.getFrequency() == null || request.getFrequency().isBlank()) {
@@ -70,7 +75,7 @@ public class SubscriptionService extends TransactionService<Subscription> implem
             subscription.setIsActive();
             return subscription;
         } catch (IllegalArgumentException e) {
-            throw new InvalidValueException("Frequency must be one of these values " + Arrays.toString(Frequency.values()));
+            throw new InvalidValueException("Frequency must be one of these values " + Arrays.toString(Frequency.values()).toLowerCase());
         }
     }
 

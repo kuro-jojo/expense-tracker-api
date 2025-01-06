@@ -1,5 +1,6 @@
 package com.kuro.expensetracker.repositories;
 
+import com.kuro.expensetracker.enums.Frequency;
 import com.kuro.expensetracker.models.Subscription;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,4 +34,6 @@ public interface SubscriptionRepository extends TransactionRepository<Subscripti
 
     @Query("SELECT s FROM Subscription s WHERE s.isActive = true AND s.dueDate <= DATE(NOW())")
     List<Subscription> findOverdueSubscriptions();
+
+    List<Subscription> findByOwnerIdAndFrequency(Long ownerId, Frequency frequency);
 }

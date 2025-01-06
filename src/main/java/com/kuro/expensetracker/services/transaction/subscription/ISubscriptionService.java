@@ -1,5 +1,6 @@
 package com.kuro.expensetracker.services.transaction.subscription;
 
+import com.kuro.expensetracker.enums.Frequency;
 import com.kuro.expensetracker.models.Subscription;
 
 import java.time.LocalDate;
@@ -15,4 +16,6 @@ public interface ISubscriptionService {
     List<Subscription> getByCategoryAndDueDate(String categoryName, LocalDate dueDate);
 
     List<Long> updateOverdueSubscriptions();
+
+    List<Subscription> getByFrequency(Frequency frequency);
 }

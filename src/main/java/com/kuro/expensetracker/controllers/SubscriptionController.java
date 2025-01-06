@@ -1,5 +1,6 @@
 package com.kuro.expensetracker.controllers;
 
+import com.kuro.expensetracker.enums.Frequency;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Subscription;
 import com.kuro.expensetracker.models.User;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -54,9 +56,11 @@ public class SubscriptionController extends TransactionController<Subscription> 
             @RequestParam(required = false, value = "due-after") String dueDateAfter,
             @RequestParam(required = false, value = "due-before") String dueDateBefore,
             @RequestParam(required = false, value = "active") Boolean isActive,
+            @RequestParam(required = false, value = "frequency") String frequency,
             @AuthenticationPrincipal User user, Pageable pageable) {
 
-        if ((dueDate == null || dueDate.isBlank()) && (dueDateAfter == null || dueDateAfter.isBlank()) && (dueDateBefore == null || dueDateBefore.isBlank()) && (isActive == null)) {
+        if ((dueDate == null || dueDate.isBlank()) && (dueDateAfter == null || dueDateAfter.isBlank()) && (dueDateBefore == null || dueDateBefore.isBlank())
+                && (isActive == null) && (frequency == null || frequency.isBlank())) {
             return super.getTransactionByCategoryFilteredByDate(
                     categoryName, beforeDate, afterDate, startDate, endDate, period, user, pageable);
         }
@@ -70,10 +74,14 @@ public class SubscriptionController extends TransactionController<Subscription> 
                 subscriptions = subscriptionService.getByCategoryAndDueDateAfter(categoryName, LocalDate.parse(dueDateAfter));
             } else if (dueDate != null && !dueDate.isBlank()) {
                 subscriptions = subscriptionService.getByCategoryAndDueDate(categoryName, LocalDate.parse(dueDate));
+            } else if (frequency != null && !frequency.isBlank()) {
+                subscriptions = subscriptionService.getByFrequency(Frequency.valueOf(frequency.toUpperCase()));
             } else {
                 subscriptions = subscriptionService.getByActive(isActive);
             }
-            subscriptions = subscriptions.stream().filter(subscription -> subscription.getIsActive() == isActive).toList();
+            if (isActive != null) {
+                subscriptions = subscriptions.stream().filter(subscription -> subscription.getIsActive() == isActive).toList();
+            }
 
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.setTotal(subscriptions.size());
@@ -87,6 +95,8 @@ public class SubscriptionController extends TransactionController<Subscription> 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
+        } catch (IllegalArgumentException e) {
+            throw new InvalidValueException("Frequency must be one of these values " + Arrays.toString(Frequency.values()).toLowerCase());
         }
     }
 

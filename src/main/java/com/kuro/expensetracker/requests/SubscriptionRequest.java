@@ -12,4 +12,8 @@ public class SubscriptionRequest extends TransactionRequest {
     private LocalDate dueDate;
     private String frequency;
     private Boolean isActive;
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency.toUpperCase();
+    }
 }
