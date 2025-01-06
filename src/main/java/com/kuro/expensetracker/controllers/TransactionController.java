@@ -20,7 +20,6 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
-//@RequiredArgsConstructor
 @Setter
 public class TransactionController<T extends Transaction> {
     private final TransactionService<T> transactionService;
@@ -106,7 +105,7 @@ public class TransactionController<T extends Transaction> {
 
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.setTotal(transactions.size());
-            response.addContent(type.getSimpleName().toLowerCase() + "s", transactions);
+            response.addContent(getClassType() + "s", transactions);
 
             logger.atInfo()
                     .addKeyValue("details",
@@ -132,7 +131,7 @@ public class TransactionController<T extends Transaction> {
 
             ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
             response.setMessage(type.getSimpleName() + " updated successfully");
-            response.addContent(type.getSimpleName().toLowerCase(), transaction);
+            response.addContent(getClassType(), transaction);
 
             logger.atInfo()
                     .addKeyValue("details",

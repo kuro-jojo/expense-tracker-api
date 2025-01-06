@@ -23,7 +23,6 @@ public class DateTimeUtil {
         return date.atTime(23, 59, 59);
     }
 
-
     public static LocalDateTime getStartOfWeek() {
         return getStartOfDay(LocalDate.now()).with(DayOfWeek.MONDAY);
     }

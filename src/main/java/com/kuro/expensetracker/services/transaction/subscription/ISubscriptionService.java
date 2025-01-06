@@ -1,9 +1,16 @@
 package com.kuro.expensetracker.services.transaction.subscription;
 
 import com.kuro.expensetracker.models.Subscription;
-import com.kuro.expensetracker.requests.SubscriptionRequest;
-import com.kuro.expensetracker.services.transaction.ITransactionService;
 
-public interface ISubscriptionService extends ITransactionService {
-     Subscription add(SubscriptionRequest request) ;
+import java.time.LocalDate;
+import java.util.List;
+
+public interface ISubscriptionService {
+    List<Subscription> getByCategoryAndDueDateBefore(String categoryName, LocalDate dueDateBefore);
+
+    List<Subscription> getByCategoryAndDueDateAfter(String categoryName, LocalDate dueDateAfter);
+
+    List<Subscription> getByActive(Boolean isActive);
+
+    List<Subscription> getByCategoryAndDueDate(String categoryName, LocalDate dueDate);
 }

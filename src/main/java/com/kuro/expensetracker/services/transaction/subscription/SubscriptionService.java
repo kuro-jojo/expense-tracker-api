@@ -17,9 +17,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
-public class SubscriptionService extends TransactionService<Subscription> {
+public class SubscriptionService extends TransactionService<Subscription> implements ISubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
 
@@ -81,5 +82,49 @@ public class SubscriptionService extends TransactionService<Subscription> {
         return subscriptionRepository.findTotalSubscriptionsByOwnerIdBetween(ownerId,
                 DateTimeUtil.getStartOfDay(startDate),
                 DateTimeUtil.getEndOfDay(endDate)).orElse(new BigDecimal(0));
+    }
+
+    @Override
+    public List<Subscription> getByCategoryAndDueDateBefore(String categoryName, LocalDate dueDateBefore) {
+        if (categoryName != null && !categoryName.isBlank()) {
+            return subscriptionRepository.findByOwnerIdAndCategoryNameAndDueDateBefore(
+                    ownerId,
+                    categoryName,
+                    dueDateBefore);
+        }
+        return subscriptionRepository.findByOwnerIdAndDueDateBefore(
+                ownerId,
+                dueDateBefore);
+    }
+
+    @Override
+    public List<Subscription> getByCategoryAndDueDateAfter(String categoryName, LocalDate dueDateAfter) {
+        if (categoryName != null && !categoryName.isBlank()) {
+            return subscriptionRepository.findByOwnerIdAndCategoryNameAndDueDateAfter(
+                    ownerId,
+                    categoryName,
+                    dueDateAfter);
+        }
+        return subscriptionRepository.findByOwnerIdAndDueDateAfter(
+                ownerId,
+                dueDateAfter);
+    }
+
+    @Override
+    public List<Subscription> getByActive(Boolean isActive) {
+        return subscriptionRepository.findByOwnerIdAndIsActive(ownerId, isActive);
+    }
+
+    @Override
+    public List<Subscription> getByCategoryAndDueDate(String categoryName, LocalDate dueDate) {
+        if (categoryName != null && !categoryName.isBlank()) {
+            return subscriptionRepository.findByOwnerIdAndCategoryNameAndDueDate(
+                    ownerId,
+                    categoryName,
+                    dueDate);
+        }
+        return subscriptionRepository.findByOwnerIdAndDueDate(
+                ownerId,
+                dueDate);
     }
 }
