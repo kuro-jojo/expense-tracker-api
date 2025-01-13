@@ -6,12 +6,17 @@ import com.kuro.expensetracker.models.Transaction;
 import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.TransactionRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
+import com.kuro.expensetracker.services.export.TransactionExportService;
 import com.kuro.expensetracker.services.transaction.TransactionService;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
@@ -19,15 +24,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Setter
 public class TransactionController<T extends Transaction> {
     private final TransactionService<T> transactionService;
     private final Logger logger = LoggerFactory.getLogger(TransactionController.class);
+    private final TransactionExportService<T> transactionExportService;
     private Class<T> type;
 
-    public TransactionController(TransactionService<T> transactionService) {
+    public TransactionController(TransactionService<T> transactionService, TransactionExportService<T> transactionExportService) {
         this.transactionService = transactionService;
+        this.transactionExportService = transactionExportService;
     }
 
     public <R extends TransactionRequest> ResponseEntity<ApiResponse> createTransaction(R request, User user) {
@@ -97,7 +105,8 @@ public class TransactionController<T extends Transaction> {
                     case "today" -> transactionService.getByCategoryAndDateToday(categoryName, pageable);
                     case "week" -> transactionService.getByCategoryAndDateWeek(categoryName, pageable);
                     case "year" -> transactionService.getByCategoryAndDateYear(categoryName, pageable);
-                    default -> throw new InvalidValueException("Period argument should be one of these values [today, week, year]");
+                    default ->
+                            throw new InvalidValueException("Period argument should be one of these values [today, week, year]");
                 };
             } else {
                 transactions = transactionService.getByCategory(categoryName, pageable);
@@ -185,6 +194,28 @@ public class TransactionController<T extends Transaction> {
         } catch (DateTimeParseException e) {
             throw new InvalidValueException("Invalid date format in the request! Should be : YYYY-MM-DD");
         }
+    }
+
+    protected ResponseEntity<Resource> exportTransaction(String type, Set<Long> ids, User user) {
+        transactionExportService.setOwnerId(user.getId());
+        logger.atInfo()
+                .log("[UUID={}] Exporting {}s with ids : {}", user.getUuid(), this.transactionService, ids);
+
+        ByteArrayResource resource;
+
+        if ("csv".equals(type)) {
+            resource = transactionExportService.generateCSV(ids);
+        } else {
+            throw new InvalidValueException("Invalid export type. Must be on of these values [csv, pdf, txt]");
+        }
+
+        logger.atInfo()
+                .log("[UUID={}] {} export generated successfully from {}s with ids : {}", user.getUuid(), type.toUpperCase(), getClassType(), ids);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment;filename=%ss.csv", getClassType()))
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     private String getClassType() {

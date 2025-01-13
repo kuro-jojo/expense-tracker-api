@@ -113,10 +113,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ProblemDetail handleInvalidBooleanValue(MethodArgumentTypeMismatchException exception) {
+    public ProblemDetail handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        logger.error("[MethodArgumentTypeMismatchException] {}", exception.getMessage());
         String paramName = exception.getName();
         ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid value for parameter '" + paramName + "'.");
-        errorDetail.setProperty("message", "The value for '" + paramName + "' must be a valid boolean ('true' or 'false').");
+        errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
 
         return errorDetail;
@@ -124,7 +125,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityAlreadyPresentException.class)
     public ProblemDetail handleEntityAlreadyPresentException(EntityAlreadyPresentException exception) {
-        logger.error("[EntityAlreadyPresentException] {}",exception.getMessage());
+        logger.error("[EntityAlreadyPresentException] {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -133,7 +134,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ProblemDetail handleEntityNotFoundException(EntityNotFoundException exception) {
-        logger.error("[EntityNotFoundException] {}",exception.getMessage());
+        logger.error("[EntityNotFoundException] {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());

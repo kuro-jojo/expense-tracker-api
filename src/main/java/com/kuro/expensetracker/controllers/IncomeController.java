@@ -4,21 +4,25 @@ import com.kuro.expensetracker.models.Income;
 import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.IncomeRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
+import com.kuro.expensetracker.services.export.TransactionExportService;
 import com.kuro.expensetracker.services.transaction.income.IncomeService;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("${api.prefix}/incomes")
 public class IncomeController extends TransactionController<Income> {
-    private final IncomeService incomeService;
 
-    public IncomeController(IncomeService incomeService) {
-        super(incomeService);
-        this.incomeService = incomeService;
+    public IncomeController(IncomeService incomeService, TransactionExportService<Income> transactionExportService) {
+        super(incomeService, transactionExportService);
+
+        transactionExportService.setTransactionType(Income.class);
         setType(Income.class);
     }
 
@@ -68,5 +72,14 @@ public class IncomeController extends TransactionController<Income> {
             @AuthenticationPrincipal User user
     ) {
         return super.getTotalOfTransactions(startDate, endDate, user);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<Resource> exportIncomes(
+            @RequestParam(required = false, value = "type", defaultValue = "csv") String type,
+            @RequestParam(required = false, value = "ids") Set<Long> ids,
+            @AuthenticationPrincipal User user
+    ) {
+        return super.exportTransaction(type, ids, user);
     }
 }

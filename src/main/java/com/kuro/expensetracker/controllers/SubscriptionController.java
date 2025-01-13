@@ -6,10 +6,12 @@ import com.kuro.expensetracker.models.Subscription;
 import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.SubscriptionRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
+import com.kuro.expensetracker.services.export.TransactionExportService;
 import com.kuro.expensetracker.services.transaction.subscription.SubscriptionService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("${api.prefix}/subscriptions")
@@ -28,9 +31,11 @@ public class SubscriptionController extends TransactionController<Subscription> 
     private final SubscriptionService subscriptionService;
     private final Logger logger = LoggerFactory.getLogger(Subscription.class);
 
-    public SubscriptionController(SubscriptionService subscriptionService) {
-        super(subscriptionService);
+    public SubscriptionController(SubscriptionService subscriptionService, TransactionExportService<Subscription> transactionExportService) {
+        super(subscriptionService, transactionExportService);
         this.subscriptionService = subscriptionService;
+
+        transactionExportService.setTransactionType(Subscription.class);
         setType(Subscription.class);
     }
 
@@ -123,5 +128,14 @@ public class SubscriptionController extends TransactionController<Subscription> 
             @AuthenticationPrincipal User user
     ) {
         return super.getTotalOfTransactions(startDate, endDate, user);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<Resource> exportSubscriptions(
+            @RequestParam(required = false, value = "type", defaultValue = "csv") String type,
+            @RequestParam(required = false, value = "ids") Set<Long> ids,
+            @AuthenticationPrincipal User user
+    ) {
+        return super.exportTransaction(type, ids, user);
     }
 }
