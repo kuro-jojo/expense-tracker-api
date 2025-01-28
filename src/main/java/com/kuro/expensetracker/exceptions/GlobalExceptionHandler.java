@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.security.SignatureException;
@@ -158,6 +159,18 @@ public class GlobalExceptionHandler {
         errorDetail.setProperty("message", "An unexpected error occurred with mail server");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
+    }
+
+    @ExceptionHandler(ResourceAccessException.class)
+    public ProblemDetail handleResourceAccessException(ResourceAccessException exception) {
+        logger.error("[{}] {}", exception.getClass().getSimpleName(), exception.getMessage());
+        if (exception.getMessage().contains("Connection refused")) {
+            ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, "Service unavailable");
+            errorDetail.setProperty("message", "The service is temporarily unavailable due to an upstream dependency. Please try again later.");
+            errorDetail.setProperty("timestamp", Instant.now());
+            return errorDetail;
+        }
+        throw new RuntimeException(exception);
     }
 
     @ExceptionHandler(Exception.class)

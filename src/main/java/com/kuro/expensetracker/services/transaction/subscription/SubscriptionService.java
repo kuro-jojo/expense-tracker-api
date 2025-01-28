@@ -10,6 +10,7 @@ import com.kuro.expensetracker.repositories.SubscriptionRepository;
 import com.kuro.expensetracker.requests.SubscriptionRequest;
 import com.kuro.expensetracker.requests.TransactionRequest;
 import com.kuro.expensetracker.services.category.CategoryService;
+import com.kuro.expensetracker.services.transaction.TransactionCategorizationService;
 import com.kuro.expensetracker.services.transaction.TransactionService;
 import com.kuro.expensetracker.utils.DateTimeUtil;
 import jakarta.transaction.Transactional;
@@ -25,8 +26,11 @@ public class SubscriptionService extends TransactionService<Subscription> implem
 
     private final SubscriptionRepository subscriptionRepository;
 
-    public SubscriptionService(CategoryService categoryService, SubscriptionRepository subscriptionRepository) {
-        super(subscriptionRepository, categoryService);
+    public SubscriptionService(
+            CategoryService categoryService,
+            SubscriptionRepository subscriptionRepository,
+            TransactionCategorizationService transactionCategorizationService) {
+        super(subscriptionRepository, categoryService, transactionCategorizationService);
         this.subscriptionRepository = subscriptionRepository;
         setType(Subscription.class);
     }

@@ -3,6 +3,8 @@ spring:
 #        hibernate:
 #            ddl-auto: create-drop
         show-sql: false
+bert-cat-api:
+    url: "http://localhost:8082/api/v1/categorize/"
 
 logging:
     level:

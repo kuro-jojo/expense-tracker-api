@@ -47,12 +47,15 @@ public class CategoryController {
     @GetMapping()
     public ResponseEntity<ApiResponse> getAllCategories(
             @RequestParam(required = false) boolean namesOnly,
+            @RequestParam(required = false) boolean withoutContent,
             @AuthenticationPrincipal User user,
             Pageable pageable) {
         categoryService.setOwnerId(user.getId());
         List<?> categories;
         if (namesOnly) {
             categories = categoryService.getAllWithNameOnly(pageable);
+        } else if (withoutContent) {
+            categories = categoryService.getAllWithoutTransactions(pageable);
         } else {
             categories = categoryService.getAll(pageable);
         }

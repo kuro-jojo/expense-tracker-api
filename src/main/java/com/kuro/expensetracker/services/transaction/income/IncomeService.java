@@ -7,6 +7,7 @@ import com.kuro.expensetracker.models.Income;
 import com.kuro.expensetracker.repositories.IncomeRepository;
 import com.kuro.expensetracker.requests.TransactionRequest;
 import com.kuro.expensetracker.services.category.CategoryService;
+import com.kuro.expensetracker.services.transaction.TransactionCategorizationService;
 import com.kuro.expensetracker.services.transaction.TransactionService;
 import com.kuro.expensetracker.utils.DateTimeUtil;
 import jakarta.transaction.Transactional;
@@ -20,8 +21,11 @@ public class IncomeService extends TransactionService<Income> {
 
     private final IncomeRepository incomeRepository;
 
-    public IncomeService(CategoryService categoryService, IncomeRepository incomeRepository) {
-        super(incomeRepository, categoryService);
+    public IncomeService(
+            CategoryService categoryService,
+            IncomeRepository incomeRepository,
+            TransactionCategorizationService transactionCategorizationService) {
+        super(incomeRepository, categoryService, transactionCategorizationService);
         this.incomeRepository = incomeRepository;
         setType(Income.class);
     }

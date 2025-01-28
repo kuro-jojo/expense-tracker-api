@@ -109,4 +109,12 @@ public class CategoryService implements ICategoryService {
                 .map(Category::getName)
                 .toList();
     }
+
+    @Override
+    public List<Category> getAllWithoutTransactions(Pageable pageable) {
+        var categories = categoryRepository.findByOwnerId(ownerId, pageable);
+
+         categories.forEach(category -> category.setTransactions(null));
+         return categories;
+    }
 }

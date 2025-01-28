@@ -23,4 +23,6 @@ public interface ICategoryService {
     List<Category> getAll(Pageable pageable);
 
     List<String> getAllWithNameOnly(Pageable pageable);
+
+    List<Category> getAllWithoutTransactions(Pageable pageable);
 }

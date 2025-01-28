@@ -5,17 +5,13 @@ import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.Category;
 import com.kuro.expensetracker.models.Transaction;
 import com.kuro.expensetracker.repositories.TransactionRepository;
-import com.kuro.expensetracker.requests.CategoryRequest;
-import com.kuro.expensetracker.requests.ExpenseRequest;
-import com.kuro.expensetracker.requests.IncomeRequest;
-import com.kuro.expensetracker.requests.TransactionRequest;
+import com.kuro.expensetracker.requests.*;
 import com.kuro.expensetracker.services.category.CategoryService;
 import com.kuro.expensetracker.utils.DateTimeUtil;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,17 +23,22 @@ import java.util.Map;
 
 @Service
 @Setter
+@Slf4j
 public class TransactionService<T extends Transaction> implements ITransactionService<T> {
     protected final TransactionRepository<T> transactionRepository;
-    protected final CategoryService categoryService;
-    private final Logger logger = LoggerFactory.getLogger(TransactionService.class);
-    private final String DEFAULT_CATEGORY_NAME = "default";
+    private final CategoryService categoryService;
+    private final TransactionCategorizationService transactionCategorizationService;
+    //    private final Logger logger = LoggerFactory.getLogger(TransactionService.class);
     protected Long ownerId;
     private Class<T> type;
 
-    public TransactionService(TransactionRepository<T> transactionRepository, CategoryService categoryService) {
+    public TransactionService(
+            TransactionRepository<T> transactionRepository,
+            CategoryService categoryService,
+            TransactionCategorizationService transactionCategorizationService) {
         this.transactionRepository = transactionRepository;
         this.categoryService = categoryService;
+        this.transactionCategorizationService = transactionCategorizationService;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
                         .name(request.getCategory())
                         .owner(request.getOwner())
                         .build());
-                logger.atInfo()
+                log.atInfo()
                         .addKeyValue("details",
                                 Map.of(getClassType() + "_id", category.getId(),
                                         getClassType() + "_name", category.getName()))
@@ -69,14 +70,17 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
 
             }
         } else {
+            var defaultCategory = getDefaultCategory(new TransactionToCategorizeRequest(request.getTitle(), getClassType()));
             try {
-                category = categoryService.getByName(DEFAULT_CATEGORY_NAME);
+                category = categoryService.getByName(defaultCategory);
+                log.info("Generated category {} already present!", defaultCategory);
             } catch (EntityNotFoundException e) {
+                log.info("Generated category {} not found; creating it!", defaultCategory);
                 category = categoryService.create(CategoryRequest.builder()
-                        .name(DEFAULT_CATEGORY_NAME)
+                        .name(defaultCategory)
                         .owner(request.getOwner())
                         .build());
-                logger.atInfo()
+                log.atInfo()
                         .addKeyValue("details",
                                 Map.of(getClassType() + "_id", category.getId(),
                                         getClassType() + "_name", category.getName()))
@@ -258,6 +262,11 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
     @Override
     public BigDecimal getTotalBetween(LocalDate startDate, LocalDate endDate) {
         return null;
+    }
+
+    public String getDefaultCategory(TransactionToCategorizeRequest transaction) {
+        var category = transactionCategorizationService.categorizeTransaction(transaction);
+        return category.label();
     }
 
     private String getClassType() {
