@@ -14,3 +14,6 @@ security:
     jwt:
         # 24h in millisecond
         expiration-time: 84600000
+
+cors:
+    allowedOrigins: http://localhost:8100

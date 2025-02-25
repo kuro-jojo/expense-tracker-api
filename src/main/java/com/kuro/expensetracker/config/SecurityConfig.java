@@ -11,7 +11,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -20,6 +25,8 @@ public class SecurityConfig {
     private final AuthenticationManager authenticationManager;
     @Value("/${api.prefix}")
     private String apiPrefix;
+    @Value("${cors.allowedOrigins}")
+    private List<String> allowedOrigins;
 
     public SecurityConfig(HandlerExceptionResolver handlerExceptionResolver,
                           AuthenticationManager authenticationManager) {
@@ -31,6 +38,8 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(httpSecurityCorsConfigurer ->
+                        httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(
                         authorize -> {
                             authorize.requestMatchers(apiPrefix + "/auth/login").permitAll();
@@ -52,5 +61,16 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(authenticationManager, handlerExceptionResolver);
     }
 
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        System.out.println(allowedOrigins);
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
