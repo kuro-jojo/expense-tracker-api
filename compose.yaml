@@ -1,0 +1,39 @@
+services:
+    mysql:
+        container_name: 'spring-mysql'
+        image: 'mysql:latest'
+        environment:
+            - 'MYSQL_DATABASE='
+            - 'MYSQL_PASSWORD='
+            - 'MYSQL_ROOT_PASSWORD='
+            - 'MYSQL_USER='
+        ports:
+            - '3306:3306'
+        volumes:
+            - my-db:/var/lib/mysql
+
+    expense-tracker:
+        image: 'kuro08/expense-tracker-api'
+        pull_policy: if_not_present
+        environment:
+            - 'SPRING_GMAIL_USERNAME='
+            - 'SPRING_GMAIL_PASSWORD=""'
+            - 'SPRING_MYSQL_HOST='
+            - 'SPRING_MYSQL_DB_NAME='
+            - 'SPRING_MYSQL_USERNAME='
+            - 'SPRING_MYSQL_PASSWORD='
+            - 'SPRING_JWT_SECRET_KEY='
+            - 'SPRING_BERT_API_ENDPOINT='
+        ports:
+            - '8081:8081'
+        depends_on:
+            - mysql
+            - bert-api
+
+    bert-api:
+        image: kuro08/bert-transaction-categorizer-api
+        ports:
+            - '8082:8082'
+
+volumes:
+    my-db:

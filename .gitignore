@@ -34,3 +34,4 @@ build/
 class_diagram.drawio.png
 .env
 logs/
+manifests/*dev*

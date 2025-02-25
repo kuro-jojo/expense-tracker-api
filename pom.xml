@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.kuro</groupId>
-    <artifactId>expense-tracker</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>expense-tracker-api</artifactId>
+    <version>1.0.0</version>
     <name>expense-tracker</name>
     <description>An expense tracker api</description>
     <url/>
