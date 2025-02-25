@@ -12,7 +12,6 @@ import java.util.List;
 
 @Component
 public class JwtAuthenticationProvider implements AuthenticationProvider {
-
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 

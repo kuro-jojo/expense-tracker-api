@@ -9,6 +9,7 @@ import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.repositories.EmailConfirmationTokenRepository;
 import com.kuro.expensetracker.repositories.UserRepository;
 import com.kuro.expensetracker.requests.UserRequest;
+import com.kuro.expensetracker.responses.AuthResponse;
 import com.kuro.expensetracker.utils.PasswordValidator;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
@@ -25,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Currency;
 import java.util.Locale;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -65,14 +65,13 @@ public class AuthenticationService implements IAuthenticationService {
     }
 
     @Override
-    public Map<String, Object> authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {
+    public AuthResponse authenticate(UserRequest request) throws BadCredentialsException, EmailConfirmationException {
         var user = getUserToAuthenticate(request);
 
         if (!user.getIsVerified()) {
             throw new EmailConfirmationException("The email need to be confirmed");
         }
-
-        return Map.of("token", jwtService.generateToken(user), "user", user);
+        return  new AuthResponse(jwtService.generateToken(user),user );
     }
 
     @Override

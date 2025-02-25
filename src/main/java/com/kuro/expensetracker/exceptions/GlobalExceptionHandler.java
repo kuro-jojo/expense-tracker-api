@@ -1,8 +1,7 @@
 package com.kuro.expensetracker.exceptions;
 
 import io.jsonwebtoken.JwtException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -15,18 +14,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.security.SignatureException;
 import java.time.Instant;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentialsException(BadCredentialsException exception) {
-        logger.error("[BadCredentialsException] Authentication failed: {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+        log.error("[BadCredentialsException] Authentication failed: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication failed");
         errorDetail.setProperty("message", "Bad credentials");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -34,8 +36,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(JwtAuthenticationException.class)
     public ProblemDetail handleJwtAuthenticationException(JwtAuthenticationException exception) {
-        logger.error("[JwtAuthenticationProvider] Authentication failed: {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+        log.error("[JwtAuthenticationProvider] Authentication failed: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication failed");
         errorDetail.setProperty("message", "Invalid authentication token");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -43,8 +47,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(JwtException.class)
     public ProblemDetail handleJwtExceptions(JwtException exception) {
-        logger.error("[JwtException - {}] Authentication failed: {}", exception.getClass().getSimpleName(), exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+        log.error("[JwtException - {}] Authentication failed: {}",
+                exception.getClass().getSimpleName(),
+                exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication failed");
         errorDetail.setProperty("message", "Invalid authentication token");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -52,8 +60,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SignatureException.class)
     public ProblemDetail handleSignatureException(SignatureException exception) {
-        logger.error("[SignatureException] Authentication failed: {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+        log.error("[SignatureException] Authentication failed: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication failed");
         errorDetail.setProperty("message", "Invalid authentication token");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -61,8 +71,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailConfirmationException.class)
     public ProblemDetail handleEmailConfirmationException(EmailConfirmationException exception) {
-        logger.error("[EmailConfirmationException] Authentication failed: {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+        log.error("[EmailConfirmationException] Authentication failed: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication failed");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -70,18 +82,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccountAlreadyActivatedException.class)
     public String handleAccountAlreadyActivatedException(AccountAlreadyActivatedException exception) {
-        logger.error("[AccountAlreadyActivatedException] : {}", exception.getMessage());
+        log.error("[AccountAlreadyActivatedException] : {}", exception.getMessage());
         return exception.getMessage();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-        logger.error("[MethodArgumentNotValidException] Constraint violated: {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid request parameter");
+        log.error("[MethodArgumentNotValidException] Constraint violated: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request parameter");
         exception.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
-            logger.error("[MethodArgumentNotValidException] Incorrect {} name : {}", fieldName, errorMessage);
+            log.error("[MethodArgumentNotValidException] Incorrect {} name : {}", fieldName, errorMessage);
             errorDetail.setProperty(fieldName, errorMessage);
         });
         errorDetail.setProperty("timestamp", Instant.now());
@@ -90,8 +104,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidValueException.class)
     public ProblemDetail handleInvalidValueException(InvalidValueException exception) {
-        logger.error("[InvalidValueException] : {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid value");
+        log.error("[InvalidValueException] : {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid value");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -99,7 +115,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleRequestBodyMissingException(HttpMessageNotReadableException exception) {
-        logger.error("[HttpMessageNotReadableException] {}", exception.getMessage());
+        log.error("[HttpMessageNotReadableException] {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         if (exception.getMessage().contains("body is missing")) {
             errorDetail.setProperty("message", "Request body is missing");
@@ -115,9 +131,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
-        logger.error("[MethodArgumentTypeMismatchException] {}", exception.getMessage());
+        log.error("[MethodArgumentTypeMismatchException] {}", exception.getMessage());
         String paramName = exception.getName();
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid value for parameter '" + paramName + "'.");
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid value for parameter '" + paramName + "'.");
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
 
@@ -126,7 +144,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityAlreadyPresentException.class)
     public ProblemDetail handleEntityAlreadyPresentException(EntityAlreadyPresentException exception) {
-        logger.error("[EntityAlreadyPresentException] {}", exception.getMessage());
+        log.error("[EntityAlreadyPresentException] {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());
@@ -135,9 +153,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ProblemDetail handleEntityNotFoundException(EntityNotFoundException exception) {
-        logger.error("[EntityNotFoundException] {}", exception.getMessage());
+        log.error("[EntityNotFoundException] {}", exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ProblemDetail handleNoResourceFoundException(NoResourceFoundException exception) {
+        log.error("[NoResourceFoundException] {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        errorDetail.setProperty("message", String.format("Resource %s not found", exception.getResourcePath()));
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
     }
@@ -145,8 +172,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
-        logger.error("Got a data integrity violation exception: {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        log.error("Got a data integrity violation exception: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal server error");
         errorDetail.setProperty("message", "An unexpected error occurred");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -154,8 +183,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MailException.class)
     public ProblemDetail handleMailException(MailException exception) {
-        logger.error("[{}] Exception with the mail server: {}", exception.getClass().getSimpleName(), exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        log.error("[{}] Exception with the mail server: {}",
+                exception.getClass().getSimpleName(),
+                exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal server error");
         errorDetail.setProperty("message", "An unexpected error occurred with mail server");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;
@@ -163,10 +196,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceAccessException.class)
     public ProblemDetail handleResourceAccessException(ResourceAccessException exception) {
-        logger.error("[{}] {}", exception.getClass().getSimpleName(), exception.getMessage());
+        log.error("[{}] {}", exception.getClass().getSimpleName(), exception.getMessage());
         if (exception.getMessage().contains("Connection refused")) {
-            ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, "Service unavailable");
-            errorDetail.setProperty("message", "The service is temporarily unavailable due to an upstream dependency. Please try again later.");
+            ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                    HttpStatus.BAD_GATEWAY,
+                    "Service unavailable");
+            errorDetail.setProperty(
+                    "message",
+                    "The service is temporarily unavailable due to an upstream dependency. Please try again later.");
             errorDetail.setProperty("timestamp", Instant.now());
             return errorDetail;
         }
@@ -175,8 +212,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralException(Exception exception) {
-        logger.error("[{}] Unhandled exception: {}", exception.getClass().getSimpleName(), exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        log.error("[{}] Unhandled exception: {}",
+                exception.getClass().getSimpleName(),
+                exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal server error");
         errorDetail.setProperty("message", "An unexpected error occurred");
         errorDetail.setProperty("timestamp", Instant.now());
         return errorDetail;

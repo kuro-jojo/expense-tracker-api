@@ -3,15 +3,13 @@ package com.kuro.expensetracker.filters;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
 @WebFilter("/*") // Intercept all incoming requests
+@Slf4j
 public class RequestLoggingFilter implements Filter {
-
-    private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -29,7 +27,7 @@ public class RequestLoggingFilter implements Filter {
             String fullUrl = query != null ? uri + "?" + query : uri;
 
             // Log at INFO level
-            logger.info("HTTP Request - Method: {}, URL: {}", method, fullUrl);
+            log.info("HTTP Request - Method: {}, URL: {}", method, fullUrl);
         }
         chain.doFilter(request, response);
     }

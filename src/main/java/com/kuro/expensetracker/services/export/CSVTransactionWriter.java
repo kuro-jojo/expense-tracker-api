@@ -14,7 +14,6 @@ import java.util.List;
 
 @Service
 public class CSVTransactionWriter<T extends Transaction> {
-
     private final String[] HEADERS = {
             "TYPE",
             "ID",
@@ -27,7 +26,6 @@ public class CSVTransactionWriter<T extends Transaction> {
             "FREQUENCY",
             "ACTIVE",
     };
-
 
     public ByteArrayOutputStream generateCSV(List<T> transactions, String type) {
 

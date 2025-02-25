@@ -9,8 +9,7 @@ import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.export.TransactionExportService;
 import com.kuro.expensetracker.services.transaction.TransactionService;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +26,9 @@ import java.util.Map;
 import java.util.Set;
 
 @Setter
+@Slf4j
 public class TransactionController<T extends Transaction> {
     private final TransactionService<T> transactionService;
-    private final Logger logger = LoggerFactory.getLogger(TransactionController.class);
     private final TransactionExportService<T> transactionExportService;
     private Class<T> type;
 
@@ -47,7 +46,7 @@ public class TransactionController<T extends Transaction> {
         response.setMessage("Transaction (" + getClassType() + ") created successfully");
         response.addContent(getClassType(), transaction);
 
-        logger.atInfo()
+        log.atInfo()
                 .addKeyValue("details",
                         Map.of(getClassType() + "_id", transaction.getId(),
                                 getClassType() + "_title", transaction.getTitle()))
@@ -64,7 +63,7 @@ public class TransactionController<T extends Transaction> {
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.addContent(type.getSimpleName().toLowerCase() + "s", transaction);
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of(getClassType() + "_id", transaction.getId(),
                                     getClassType() + "_title", transaction.getTitle()))
@@ -116,7 +115,7 @@ public class TransactionController<T extends Transaction> {
             response.setTotal(transactions.size());
             response.addContent(getClassType() + "s", transactions);
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of(getClassType() + "s_total", transactions.size()))
                     .log("[UUID={}] Transactions ({}s) retrieved successfully", user.getUuid(), getClassType());
@@ -142,7 +141,7 @@ public class TransactionController<T extends Transaction> {
             response.setMessage(type.getSimpleName() + " updated successfully");
             response.addContent(getClassType(), transaction);
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of(getClassType() + "_id", transaction.getId(),
                                     getClassType() + "_title", transaction.getTitle()))
@@ -159,7 +158,7 @@ public class TransactionController<T extends Transaction> {
             transactionService.setOwnerId(user.getId());
             transactionService.deleteById(Long.valueOf(id));
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of(getClassType() + "_id", id))
                     .log("[UUID={}] Transaction ({}) created successfully", user.getUuid(), getClassType());
@@ -187,7 +186,7 @@ public class TransactionController<T extends Transaction> {
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.addContent("total", total);
 
-            logger.atInfo()
+            log.atInfo()
                     .log("[UUID={}] Transactions ({}s) total retrieved successfully", user.getUuid(), getClassType());
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -198,7 +197,7 @@ public class TransactionController<T extends Transaction> {
 
     protected ResponseEntity<Resource> exportTransaction(String type, Set<Long> ids, User user) {
         transactionExportService.setOwnerId(user.getId());
-        logger.atInfo()
+        log.atInfo()
                 .log("[UUID={}] Exporting {}s with ids : {}", user.getUuid(), this.transactionService, ids);
 
         ByteArrayResource resource;
@@ -209,7 +208,7 @@ public class TransactionController<T extends Transaction> {
             throw new InvalidValueException("Invalid export type. Must be on of these values [csv, pdf, txt]");
         }
 
-        logger.atInfo()
+        log.atInfo()
                 .log("[UUID={}] {} export generated successfully from {}s with ids : {}", user.getUuid(), type.toUpperCase(), getClassType(), ids);
 
         return ResponseEntity.ok()

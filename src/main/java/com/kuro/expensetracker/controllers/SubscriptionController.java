@@ -9,8 +9,7 @@ import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.export.TransactionExportService;
 import com.kuro.expensetracker.services.transaction.subscription.SubscriptionService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -27,9 +26,9 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("${api.prefix}/subscriptions")
+@Slf4j
 public class SubscriptionController extends TransactionController<Subscription> {
     private final SubscriptionService subscriptionService;
-    private final Logger logger = LoggerFactory.getLogger(Subscription.class);
 
     public SubscriptionController(SubscriptionService subscriptionService, TransactionExportService<Subscription> transactionExportService) {
         super(subscriptionService, transactionExportService);
@@ -92,7 +91,7 @@ public class SubscriptionController extends TransactionController<Subscription> 
             response.setTotal(subscriptions.size());
             response.addContent("subscriptions", subscriptions);
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of("subscriptions_total", subscriptions.size()))
                     .log("[UUID={}] Transactions (subscriptions) retrieved successfully", user.getUuid());

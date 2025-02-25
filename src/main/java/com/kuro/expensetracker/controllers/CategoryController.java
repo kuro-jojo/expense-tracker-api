@@ -7,8 +7,7 @@ import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.category.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +20,9 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${api.prefix}/categories")
+@Slf4j
 public class CategoryController {
     private final CategoryService categoryService;
-    private final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
     @PostMapping()
     public ResponseEntity<ApiResponse> createCategory(
@@ -35,7 +34,7 @@ public class CategoryController {
         response.setMessage("Category created successfully");
         response.addContent("category", category);
 
-        logger.atInfo()
+        log.atInfo()
                 .addKeyValue("details",
                         Map.of("category_id", category.getId(),
                                 "category_name", category.getName()))
@@ -64,7 +63,7 @@ public class CategoryController {
         response.setTotal(categories.size());
         response.addContent("categories", categories);
 
-        logger.atInfo()
+        log.atInfo()
                 .addKeyValue("details",
                         Map.of("categories_total", categories.size()))
                 .log("[UUID={}] List of categories retrieved successfully", user.getUuid());
@@ -84,7 +83,7 @@ public class CategoryController {
             ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
             response.addContent("category", category);
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of("category_id", category.getId(),
                                     "category_name", category.getName()))
@@ -110,7 +109,7 @@ public class CategoryController {
             response.setMessage("Category with id #" + id + " updated successfully!");
             response.addContent("category", category);
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of("category_id", category.getId(),
                                     "category_name", category.getName()))
@@ -130,7 +129,7 @@ public class CategoryController {
             categoryService.setOwnerId(user.getId());
             categoryService.deleteById(Long.valueOf(id));
 
-            logger.atInfo()
+            log.atInfo()
                     .addKeyValue("details",
                             Map.of("category_id", id))
                     .log("[UUID={}] Category with all transactions deleted successfully", user.getUuid());

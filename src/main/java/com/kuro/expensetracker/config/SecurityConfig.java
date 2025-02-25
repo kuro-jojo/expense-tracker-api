@@ -16,7 +16,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final AuthenticationManager authenticationManager;
     @Value("/${api.prefix}")
@@ -34,10 +33,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         authorize -> {
-                            authorize.requestMatchers(apiPrefix + "/users/login").permitAll();
-                            authorize.requestMatchers(apiPrefix + "/users/register").permitAll();
-                            authorize.requestMatchers(apiPrefix + "/users/confirm-email").permitAll();
-                            authorize.requestMatchers(apiPrefix + "/users/resend-confirmation-link").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/auth/login").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/auth/register").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/auth/confirm-email").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/auth/resend-confirmation-link").permitAll();
                             authorize.anyRequest().authenticated();
                         })
                 .formLogin(AbstractHttpConfigurer::disable)
