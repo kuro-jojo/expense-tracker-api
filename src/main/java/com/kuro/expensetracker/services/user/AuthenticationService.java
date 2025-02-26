@@ -79,8 +79,10 @@ public class AuthenticationService implements IAuthenticationService {
         // Generate a token or an OTP for the confirmation email
         if (byOTP) {
             var otp = generateOTP(user);
-            emailService.sendConfirmationEmail(otp);
+            emailService.sendConfirmationEmail(otp, user);
             log.info("OTP sent by mail to {}.", user.getEmail());
+
+            user.setOtp(otp);
         } else {
             var emailConfirmationToken = generateConfirmationToken(user);
             emailService.sendConfirmationEmail(emailConfirmationToken);
@@ -110,12 +112,15 @@ public class AuthenticationService implements IAuthenticationService {
             throw new AccountAlreadyActivatedException(user.getUuid());
         }
 
-        handleInvalidTokenOrOTP(user, byOTP);
-
         if (byOTP) {
+            otpRepository.findByEmail(user.getEmail())
+                    .ifPresent(otpRepository::delete);
+
             var otp = generateOTP(user);
-            emailService.sendConfirmationEmail(otp);
+            emailService.sendConfirmationEmail(otp, user);
+            user.setOtp(otp);
         } else {
+            handleInvalidToken(user);
             var emailConfirmationToken = generateConfirmationToken(user);
             emailService.sendConfirmationEmail(emailConfirmationToken);
         }
@@ -143,25 +148,23 @@ public class AuthenticationService implements IAuthenticationService {
         }
 
         if (!confirmationEmailToken.isValid()) {
-            handleInvalidTokenOrOTP(user, false);
+            handleInvalidToken(user);
             log.info("Confirm Email : Removing confirmation email token - Token expired!");
             throw new ConfirmationEmailException(exceptionMessage);
         }
 
         user.setIsVerified(true);
-        handleInvalidTokenOrOTP(user, false);
+        handleInvalidToken(user);
     }
 
     @Override
     public void verifyOTP(VerifyOtpRequest otpRequest)
             throws ConfirmationEmailException, InvalidValueException {
         Optional<OTP> otpOpt;
-        if (otpRequest.userID() != null) {
-            otpOpt = otpRepository.findByUserIdAndOtp(otpRequest.userID(), otpRequest.otp());
-        } else if (otpRequest.email() != null) {
-            otpOpt = otpRepository.findByEmailAndOtp(otpRequest.email(), otpRequest.otp());
+        if (otpRequest.sessionID() != null) {
+            otpOpt = otpRepository.findBySessionIDAndOtp(otpRequest.sessionID(), otpRequest.otp());
         } else {
-            throw new InvalidValueException("Please provide the OTP and the user ID/email");
+            throw new InvalidValueException("Please provide the OTP and the sessionID");
         }
 
         var exceptionMessage = "Invalid OTP or expired OTP. " +
@@ -173,8 +176,8 @@ public class AuthenticationService implements IAuthenticationService {
         }
 
         var otp = otpOpt.get();
-        var user = otp.getUser();
-        if (user == null) {
+        var userOpt = userRepository.findByEmail(otp.getEmail());
+        if (userOpt.isEmpty()) {
             otpRepository.delete(otp);
             log.info("Confirm Email : Removing OTP - User not found!");
             throw new ConfirmationEmailException(exceptionMessage);
@@ -182,13 +185,14 @@ public class AuthenticationService implements IAuthenticationService {
 
         if (!otp.isValid()) {
             // remove the otp only
-            handleInvalidTokenOrOTP(user, true);
+            otpRepository.delete(otp);
             log.info("Confirm Email : Removing OTP - OTP expired!");
             throw new ConfirmationEmailException(exceptionMessage);
         }
 
-        user.setIsVerified(true);
-        handleInvalidTokenOrOTP(user, true);
+        userOpt.get().setIsVerified(true);
+        otpRepository.delete(otp);
+        userRepository.save(userOpt.get());
     }
 
     @Override
@@ -207,13 +211,17 @@ public class AuthenticationService implements IAuthenticationService {
         return otps.stream().map(OTP::getId).toList();
     }
 
-    private void handleInvalidTokenOrOTP(User user, boolean isOTP) {
-        if (isOTP) {
-            user.setOtp(null);
-        } else {
-            user.setConfirmationEmailToken(null);
-        }
+    private void handleInvalidToken(User user) {
+        user.setConfirmationEmailToken(null);
         userRepository.save(user);
+    }
+
+    private String generateSessionID() {
+        SecureRandom secureRandom = new SecureRandom();
+
+        byte[] randomBytes = new byte[24];
+        secureRandom.nextBytes(randomBytes);
+        return new String(Base64.getUrlEncoder().encode(randomBytes));
     }
 
     private ConfirmationEmailToken generateConfirmationToken(User user) {
@@ -241,7 +249,8 @@ public class AuthenticationService implements IAuthenticationService {
         var otp = OTP.builder()
                 .otp(otpString.toString())
                 .expiration(LocalDateTime.now().plusMinutes(otpExpiration))
-                .user(user)
+                .sessionID(generateSessionID())
+                .email(user.getEmail())
                 .build();
 
         return otpRepository.save(otp);

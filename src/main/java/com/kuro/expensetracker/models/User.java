@@ -54,7 +54,8 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private ConfirmationEmailToken confirmationEmailToken;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Transient
+    @JsonIgnore
     private OTP otp;
 
     @PrePersist
@@ -100,6 +101,6 @@ public class User implements UserDetails {
 
     @Override
     public String toString() {
-        return String.format("User %s with email : %s. \n Account verified : %b. \n Joined at : %tF.", name, email, isVerified, joinedAt);
+        return String.format("User %s with sessionID : %s. \n Account verified : %b. \n Joined at : %tF.", name, email, isVerified, joinedAt);
     }
 }

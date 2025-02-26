@@ -45,14 +45,14 @@ public class EmailService {
         sender.send(message);
     }
 
-    public void sendConfirmationEmail(OTP otp) throws MessagingException, MailAuthenticationException {
+    public void sendConfirmationEmail(OTP otp, User user) throws MessagingException, MailAuthenticationException {
         MimeMessage message = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(otp.getUser().getEmail());
+        helper.setTo(otp.getEmail());
         helper.setSubject("Your One-Time Password (OTP) for Secure Access - " + appName);
         helper.setText("<html>" +
                         "<body>" +
-                        "<h2>Dear " + otp.getUser().getName() + ",</h2>"
+                        "<h2>Dear " + user.getName() + ",</h2>"
                         + "<p>We're excited to have you get started. " +
                         "please use the following One-Time Password (OTP) : "
                         + "<br/> <b> OTP : [" + otp.getOtp() + "]</b>" +

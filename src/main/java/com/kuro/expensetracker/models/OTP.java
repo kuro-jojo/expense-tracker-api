@@ -17,11 +17,13 @@ public class OTP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Length(min = 6, max = 6)
+    @Column(nullable = false)
     private String otp;
     private LocalDateTime expiration;
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private String sessionID;
+    @Column(nullable = false)
+    private String email;
 
     public boolean isValid() {
         return expiration.isAfter(LocalDateTime.now());

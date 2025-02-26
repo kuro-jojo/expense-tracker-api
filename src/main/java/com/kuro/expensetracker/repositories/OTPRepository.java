@@ -10,10 +10,9 @@ import java.util.Optional;
 
 public interface OTPRepository extends JpaRepository<OTP, Long> {
 
-    Optional<OTP> findByUserIdAndOtp(Long userId, String otp);
+    Optional<OTP> findBySessionIDAndOtp(String sessionID, String otp);
 
-    @Query("SELECT o FROM OTP o WHERE o.otp = :otp AND o.user.email = :email")
-    Optional<OTP> findByEmailAndOtp(@Param("email") String email, @Param("otp") String otp);
+    Optional<OTP> findByEmail(String email);
 
     @Query("SELECT o FROM OTP o WHERE o.expiration <= NOW()")
     List<OTP> findExpiredOTPs();

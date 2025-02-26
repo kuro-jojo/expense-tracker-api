@@ -45,7 +45,10 @@ public class AuthenticationController {
 
             ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
             response.setMessage("User registered successfully. Email sent to " + user.getEmail());
-            response.addContent("user", user);
+
+            if (byOTP) {
+                response.addContent("sessionID", user.getOtp().getSessionID());
+            }
 
             log.atInfo()
                     .log("[UUID={}] User registered successfully", user.getUuid());
@@ -68,6 +71,10 @@ public class AuthenticationController {
 
         ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
         response.setMessage("Email resent to " + request.getEmail());
+
+        if (byOTP) {
+            response.addContent("sessionID", user.getOtp().getSessionID());
+        }
 
         log.atInfo()
                 .log("[UUID={}] Confirmation link resent to the user successfully", user.getUuid());

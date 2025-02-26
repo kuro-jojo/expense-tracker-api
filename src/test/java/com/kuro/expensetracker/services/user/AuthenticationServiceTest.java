@@ -91,7 +91,7 @@ class AuthenticationServiceTest {
         var savedUser = userRepository.save(expectedUser);
 //        confirmationEmailToken = authenticationService.generateConfirmationToken(savedUser);
         try {
-            doNothing().when(emailService).sendConfirmationEmail(otp);
+            doNothing().when(emailService).sendConfirmationEmail(otp, savedUser);
             var actualUser = authenticationService.register(request, true);
             Assertions.assertNotNull(actualUser);
         } catch (MessagingException e) {
