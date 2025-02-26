@@ -13,6 +13,7 @@ import com.kuro.expensetracker.repositories.UserRepository;
 import com.kuro.expensetracker.requests.UserRequest;
 import com.kuro.expensetracker.requests.VerifyOtpRequest;
 import com.kuro.expensetracker.responses.AuthResponse;
+import com.kuro.expensetracker.utils.EmailValidator;
 import com.kuro.expensetracker.utils.PasswordValidator;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,10 @@ public class AuthenticationService implements IAuthenticationService {
             throws InvalidValueException, MessagingException {
         if (request.getName() == null) {
             throw new InvalidValueException("Must provide a name.");
+        }
+
+        if (EmailValidator.isEmailInvalid(request.getEmail())) {
+            throw new InvalidValueException("Must be a well-formed email address.");
         }
 
         if (PasswordValidator.isPasswordInvalid(request.getPassword())) {

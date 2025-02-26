@@ -5,6 +5,7 @@ import com.kuro.expensetracker.exceptions.UserNotFoundException;
 import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.repositories.UserRepository;
 import com.kuro.expensetracker.requests.UserRequest;
+import com.kuro.expensetracker.utils.EmailValidator;
 import com.kuro.expensetracker.utils.PasswordValidator;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,9 @@ public class UserService implements IUserService {
     @Override
     @Transactional
     public void update(UserRequest request) {
+        if (EmailValidator.isEmailInvalid(request.getEmail())) {
+            throw new InvalidValueException("Must be a well-formed email address.");
+        }
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             if (PasswordValidator.isPasswordInvalid(request.getPassword())) {
