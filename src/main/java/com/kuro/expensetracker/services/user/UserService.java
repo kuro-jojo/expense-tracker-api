@@ -6,6 +6,7 @@ import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.repositories.UserRepository;
 import com.kuro.expensetracker.requests.UserRequest;
 import com.kuro.expensetracker.utils.PasswordValidator;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Override
     public Optional<User> getById(Long id) throws UserNotFoundException {
@@ -30,7 +32,7 @@ public class UserService implements IUserService {
     public void update(UserRequest request) {
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            if (!PasswordValidator.isPasswordValid(request.getPassword())) {
+            if (PasswordValidator.isPasswordInvalid(request.getPassword())) {
                 throw new InvalidValueException("Password must match : " + PasswordValidator.PASSWORD_REQUIREMENT);
             }
             var password = passwordEncoder.encode(request.getPassword());
@@ -43,7 +45,8 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void delete(User user) {
+    public void delete(User user) throws MessagingException {
+        emailService.sendAccountDeletedEmail(user);
         userRepository.delete(user);
     }
 }

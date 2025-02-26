@@ -52,20 +52,10 @@ public class User implements UserDetails {
     private List<PaymentMode> paymentModes;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private EmailConfirmationToken emailConfirmationToken;
+    private ConfirmationEmailToken confirmationEmailToken;
 
-    public User(Long id) {
-        this.id = id;
-    }
-
-    public User(String name, String email, String password, LocalDateTime joinedAt, Currency currency) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.joinedAt = joinedAt;
-        this.currency = currency;
-        this.isVerified = false;
-    }
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private OTP otp;
 
     @PrePersist
     private void initUUID() {
@@ -110,6 +100,6 @@ public class User implements UserDetails {
 
     @Override
     public String toString() {
-        return String.format("User %s with email : %s. \n Account verified = %b. \n Joined at : %tF.", name, email, isVerified, joinedAt);
+        return String.format("User %s with email : %s. \n Account verified : %b. \n Joined at : %tF.", name, email, isVerified, joinedAt);
     }
 }

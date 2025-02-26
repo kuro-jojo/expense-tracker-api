@@ -69,21 +69,22 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
-    @ExceptionHandler(EmailConfirmationException.class)
-    public ProblemDetail handleEmailConfirmationException(EmailConfirmationException exception) {
-        log.error("[EmailConfirmationException] Authentication failed: {}", exception.getMessage());
-        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.UNAUTHORIZED,
-                "Authentication failed");
-        errorDetail.setProperty("message", exception.getMessage());
-        errorDetail.setProperty("timestamp", Instant.now());
-        return errorDetail;
-    }
 
     @ExceptionHandler(AccountAlreadyActivatedException.class)
     public String handleAccountAlreadyActivatedException(AccountAlreadyActivatedException exception) {
-        log.error("[AccountAlreadyActivatedException] : {}", exception.getMessage());
+        log.error("[AccountAlreadyActivatedException] User [{}] account already activated", exception.getUuid());
         return exception.getMessage();
+    }
+
+    @ExceptionHandler(ConfirmationEmailException.class)
+    public ProblemDetail handleConfirmationEmailException(ConfirmationEmailException exception) {
+        log.error("[ConfirmationEmailException] Failed to confirm email: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Email verification is pending or could not be processed");
+        errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -142,9 +143,10 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
+
     @ExceptionHandler(EntityAlreadyPresentException.class)
     public ProblemDetail handleEntityAlreadyPresentException(EntityAlreadyPresentException exception) {
-        log.error("[EntityAlreadyPresentException] {}", exception.getMessage());
+        log.error("[{}] {}", exception.getClass().getSimpleName(), exception.getMessage());
         ProblemDetail errorDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         errorDetail.setProperty("message", exception.getMessage());
         errorDetail.setProperty("timestamp", Instant.now());

@@ -57,8 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         return requestUri.equals(apiPrefix + "/auth/login")
                 || requestUri.equals(apiPrefix + "/auth/register")
-                || requestUri.equals(apiPrefix + "/auth/resend-confirmation-link")
-                || requestUri.equals(apiPrefix + "/auth/confirm-email");
+                || requestUri.equals(apiPrefix + "/auth/resend-confirmation-email")
+                || requestUri.equals(apiPrefix + "/auth/confirm-email")
+                || requestUri.equals(apiPrefix + "/auth/verify-otp")
+                ;
     }
 
     private String extractJwtFromHeader(HttpServletRequest request) {

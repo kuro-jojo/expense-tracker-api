@@ -49,7 +49,7 @@ class CategoryServiceTest {
     @Test
     public void createCategory_withValidRequest_shouldReturnCategory() {
         CategoryRequest categoryRequest = CategoryRequest.builder()
-                .owner(new User(ownerId))
+                .owner(User.builder().id(ownerId).build())
                 .name("sport")
                 .description("For sports transactions")
                 .threshold(new BigDecimal(200))
@@ -67,7 +67,7 @@ class CategoryServiceTest {
     @Test
     public void createCategory_withInvalidRequest_forNegativeThreshold_shouldThrowInvalidValueException() {
         CategoryRequest categoryRequest = CategoryRequest.builder()
-                .owner(new User(ownerId))
+                .owner(User.builder().id(ownerId).build())
                 .name("sport")
                 .description("For sports transactions")
                 .threshold(new BigDecimal(200).negate())
@@ -82,7 +82,7 @@ class CategoryServiceTest {
     @Test
     public void createCategory_withExistingCategory_shouldThrowEntityAlreadyPresentException() {
         CategoryRequest categoryRequest = CategoryRequest.builder()
-                .owner(new User(ownerId))
+                .owner(User.builder().id(ownerId).build())
                 .name("sport")
                 .description("For sports transactions")
                 .threshold(new BigDecimal(200))

@@ -1,8 +1,9 @@
 package com.kuro.expensetracker.controllers;
 
-import com.kuro.expensetracker.exceptions.EmailConfirmationException;
+import com.kuro.expensetracker.exceptions.ConfirmationEmailException;
 import com.kuro.expensetracker.exceptions.UserAlreadyPresentException;
 import com.kuro.expensetracker.requests.UserRequest;
+import com.kuro.expensetracker.requests.VerifyOtpRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.responses.AuthResponse;
 import com.kuro.expensetracker.services.user.AuthenticationService;
@@ -23,7 +24,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserRequest request) throws EmailConfirmationException {
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserRequest request) throws ConfirmationEmailException {
         AuthResponse authenticatedUser = authenticationService.authenticate(request);
         ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
         response.addContent("token", authenticatedUser.token());
@@ -35,9 +36,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@Valid @RequestBody UserRequest request) throws MessagingException {
+    public ResponseEntity<ApiResponse> register(
+            @Valid @RequestBody UserRequest request,
+            @RequestParam(required = false, defaultValue = "true") boolean byOTP
+    ) throws MessagingException {
         try {
-            var user = authenticationService.register(request);
+            var user = authenticationService.register(request, byOTP);
 
             ApiResponse response = new ApiResponse(true, HttpStatus.CREATED.value());
             response.setMessage("User registered successfully. Email sent to " + user.getEmail());
@@ -48,13 +52,19 @@ public class AuthenticationController {
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (DataIntegrityViolationException e) {
-            throw new UserAlreadyPresentException(request.getEmail());
+            if (e.getMessage().contains("Duplicate entry")) {
+                throw new UserAlreadyPresentException(request.getEmail());
+            }
+            throw e;
         }
     }
 
-    @PostMapping("/resend-confirmation-link")
-    public ResponseEntity<ApiResponse> resendConfirmationLink(@Valid @RequestBody UserRequest request) throws EmailConfirmationException, MessagingException {
-        var user = authenticationService.resendConfirmationLink(request);
+    @PostMapping("/resend-confirmation-email")
+    public ResponseEntity<ApiResponse> resendConfirmationEmail(
+            @Valid @RequestBody UserRequest request,
+            @RequestParam(required = false, defaultValue = "true") boolean byOTP
+    ) throws ConfirmationEmailException, MessagingException {
+        var user = authenticationService.resendConfirmationEmail(request, byOTP);
 
         ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
         response.setMessage("Email resent to " + request.getEmail());
@@ -66,18 +76,23 @@ public class AuthenticationController {
     }
 
     @GetMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(
-            @RequestParam String token) throws EmailConfirmationException {
-        if (authenticationService.confirmEmail(token)) {
-            log.atInfo()
-                    .log("User email verified successfully");
+    public ResponseEntity<String> confirmEmail(@RequestParam String token)
+            throws ConfirmationEmailException {
+        authenticationService.confirmEmail(token);
 
-            return ResponseEntity.ok("Your email has been successfully verified.");
-        }
         log.atInfo()
-                .log("Failed to verified user email : User details not found or the link has expired");
+                .log("User email verified successfully");
 
-        return ResponseEntity.ok("User details not found or the link has expired. If you already registered, please request a new confirmation link.");
+        return ResponseEntity.ok("Your email has been successfully verified.");
     }
 
+    @PostMapping("/verify-otp")
+    public ResponseEntity<String> verifyOTP(@RequestBody VerifyOtpRequest otpRequest)
+            throws ConfirmationEmailException {
+        authenticationService.verifyOTP(otpRequest);
+        log.atInfo()
+                .log("User email verified successfully");
+
+        return ResponseEntity.ok("Your email has been successfully verified.");
+    }
 }

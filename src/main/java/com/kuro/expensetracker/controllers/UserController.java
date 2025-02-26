@@ -4,6 +4,7 @@ import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.requests.UserRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.services.user.UserService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -46,10 +47,10 @@ public class UserController {
     }
 
     @DeleteMapping("/profile")
-    public ResponseEntity<ApiResponse> deleteUser(
-            @AuthenticationPrincipal User user) {
-        userService.delete(user);
+    public ResponseEntity<ApiResponse> deleteUser(@AuthenticationPrincipal User user)
+            throws MessagingException {
 
+        userService.delete(user);
         log.atInfo()
                 .log("[UUID={}] User account deleted successfully", user.getUuid());
 

@@ -1,11 +1,13 @@
 package com.kuro.expensetracker.services.user;
 
 import com.kuro.expensetracker.auth.JwtService;
-import com.kuro.expensetracker.exceptions.EmailConfirmationException;
+import com.kuro.expensetracker.exceptions.ConfirmationEmailException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
-import com.kuro.expensetracker.models.EmailConfirmationToken;
+import com.kuro.expensetracker.models.ConfirmationEmailToken;
+import com.kuro.expensetracker.models.OTP;
 import com.kuro.expensetracker.models.User;
-import com.kuro.expensetracker.repositories.EmailConfirmationTokenRepository;
+import com.kuro.expensetracker.repositories.ConfirmationEmailTokenRepository;
+import com.kuro.expensetracker.repositories.OTPRepository;
 import com.kuro.expensetracker.repositories.UserRepository;
 import com.kuro.expensetracker.requests.UserRequest;
 import jakarta.mail.MessagingException;
@@ -41,7 +43,9 @@ class AuthenticationServiceTest {
     @Mock
     private AuthenticationManager authenticationManager;
     @Mock
-    private EmailConfirmationTokenRepository emailConfirmationTokenRepository;
+    private ConfirmationEmailTokenRepository confirmationEmailTokenRepository;
+    @Mock
+    private OTPRepository otpRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
@@ -72,19 +76,23 @@ class AuthenticationServiceTest {
                 .password(correctPassword)
                 .build();
 
-        EmailConfirmationToken emailConfirmationToken = Mockito.mock(EmailConfirmationToken.class);
+        ConfirmationEmailToken confirmationEmailToken = Mockito.mock(ConfirmationEmailToken.class);
+        OTP otp = Mockito.mock(OTP.class);
         when(userRepository.save(any(User.class))).thenReturn(expectedUser);
 
-        when(emailConfirmationTokenRepository.save(any(EmailConfirmationToken.class))).thenReturn(
-                emailConfirmationToken
+//        when(confirmationEmailTokenRepository.save(any(ConfirmationEmailToken.class))).thenReturn(
+//                confirmationEmailToken
+//        );
+        when(otpRepository.save(any(OTP.class))).thenReturn(
+                otp
         );
 
 
         var savedUser = userRepository.save(expectedUser);
-        emailConfirmationToken = authenticationService.generateConfirmationToken(savedUser);
+//        confirmationEmailToken = authenticationService.generateConfirmationToken(savedUser);
         try {
-            doNothing().when(emailService).sendConfirmationEmail(emailConfirmationToken);
-            var actualUser = authenticationService.register(request);
+            doNothing().when(emailService).sendConfirmationEmail(otp);
+            var actualUser = authenticationService.register(request, true);
             Assertions.assertNotNull(actualUser);
         } catch (MessagingException e) {
             throw new RuntimeException(e);
@@ -98,7 +106,9 @@ class AuthenticationServiceTest {
                 .password(correctPassword)
                 .build();
 
-        Assertions.assertThrows(InvalidValueException.class, () -> authenticationService.register(request));
+        Assertions.assertThrows(
+                InvalidValueException.class,
+                () -> authenticationService.register(request, false));
     }
 
     @Test
@@ -109,7 +119,9 @@ class AuthenticationServiceTest {
                 .password("correctPassword")
                 .build();
 
-        Assertions.assertThrows(InvalidValueException.class, () -> authenticationService.register(request));
+        Assertions.assertThrows(
+                InvalidValueException.class,
+                () -> authenticationService.register(request, true));
     }
 
     @Test
@@ -168,55 +180,54 @@ class AuthenticationServiceTest {
         when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(expectedUser));
         when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(authentication);
 
-        assertThrows(EmailConfirmationException.class, () -> authenticationService.authenticate(request));
+        assertThrows(ConfirmationEmailException.class, () -> authenticationService.authenticate(request));
     }
 
     @Test
-    public void confirmEmail_withValidToken_shouldReturnTrue() {
+    public void confirmEmail_withValidToken_shouldNotThrowException() {
         var token = "secret-token";
-        var emailConfirmationToken = EmailConfirmationToken.builder()
+        var emailConfirmationToken = ConfirmationEmailToken.builder()
                 .user(expectedUser)
                 .token(token)
                 .expiration(LocalDateTime.now().plusHours(2L))
                 .build();
 
-        when(emailConfirmationTokenRepository.findByToken(token)).thenReturn(Optional.of(emailConfirmationToken));
+        when(confirmationEmailTokenRepository.findByToken(token)).thenReturn(Optional.of(emailConfirmationToken));
         when(userRepository.save(any(User.class))).thenReturn(expectedUser);
-        doNothing().when(emailConfirmationTokenRepository).delete(emailConfirmationToken);
 
-        assertTrue(authenticationService.confirmEmail(token));
+        assertDoesNotThrow(() -> authenticationService.confirmEmail(token));
     }
 
     @Test
-    public void confirmEmail_withInvalidUserInToken_shouldReturnFalse() {
+    public void confirmEmail_withInvalidUserInToken_shouldThrowConfirmationEmailException() {
         var token = "secret-token";
-        var emailConfirmationToken = EmailConfirmationToken.builder()
+        var emailConfirmationToken = ConfirmationEmailToken.builder()
                 .token(token)
                 .expiration(LocalDateTime.now())
                 .build();
 
-        when(emailConfirmationTokenRepository.findByToken(token)).thenReturn(Optional.of(emailConfirmationToken));
-        assertFalse(authenticationService.confirmEmail(token));
+        when(confirmationEmailTokenRepository.findByToken(token)).thenReturn(Optional.of(emailConfirmationToken));
+        assertThrows(ConfirmationEmailException.class, () -> authenticationService.confirmEmail(token));
     }
 
     @Test
-    public void confirmEmail_withExpiredToken_shouldReturnFalse() {
+    public void confirmEmail_withExpiredToken_shouldThrowConfirmationEmailException() {
         var token = "secret-token";
-        var emailConfirmationToken = EmailConfirmationToken.builder()
+        var emailConfirmationToken = ConfirmationEmailToken.builder()
                 .user(expectedUser)
                 .token(token)
                 .expiration(LocalDateTime.now())
                 .build();
 
-        when(emailConfirmationTokenRepository.findByToken(token)).thenReturn(Optional.of(emailConfirmationToken));
+        when(confirmationEmailTokenRepository.findByToken(token)).thenReturn(Optional.of(emailConfirmationToken));
 
-        assertFalse(authenticationService.confirmEmail(token));
+        assertThrows(ConfirmationEmailException.class, () -> authenticationService.confirmEmail(token));
     }
 
     @Test
-    public void confirmEmail_withUnknownToken_shouldReturnFalse() {
+    public void confirmEmail_withUnknownToken_shouldThrowConfirmationEmailException() {
         var token = "secret-token";
 
-        assertFalse(authenticationService.confirmEmail(token));
+        assertThrows(ConfirmationEmailException.class, () -> authenticationService.confirmEmail(token));
     }
 }

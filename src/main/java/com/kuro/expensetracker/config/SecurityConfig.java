@@ -45,7 +45,8 @@ public class SecurityConfig {
                             authorize.requestMatchers(apiPrefix + "/auth/login").permitAll();
                             authorize.requestMatchers(apiPrefix + "/auth/register").permitAll();
                             authorize.requestMatchers(apiPrefix + "/auth/confirm-email").permitAll();
-                            authorize.requestMatchers(apiPrefix + "/auth/resend-confirmation-link").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/auth/verify-otp").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/auth/resend-confirmation-email").permitAll();
                             authorize.anyRequest().authenticated();
                         })
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -63,7 +64,6 @@ public class SecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        System.out.println(allowedOrigins);
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("*"));

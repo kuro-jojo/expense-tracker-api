@@ -46,7 +46,7 @@ security:
         expiration-time: 2 # in hours
 
 config:
-    app-name: Kuro Expense Tracker
+    app-name: K.E-Tracker
 
 cors:
     allowedOrigins: ${SPRING_CORS_ALLOWED_ORIGINS}

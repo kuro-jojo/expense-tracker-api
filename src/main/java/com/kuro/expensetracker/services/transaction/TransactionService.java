@@ -28,7 +28,6 @@ public class TransactionService<T extends Transaction> implements ITransactionSe
     protected final TransactionRepository<T> transactionRepository;
     private final CategoryService categoryService;
     private final TransactionCategorizationService transactionCategorizationService;
-    //    private final Logger logger = LoggerFactory.getLogger(TransactionService.class);
     protected Long ownerId;
     private Class<T> type;
 
