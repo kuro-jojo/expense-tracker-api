@@ -22,6 +22,11 @@ public class ApiResponse {
         additionalContent = new HashMap<>();
     }
 
+    public ApiResponse(boolean success, int value, String message) {
+        this(true, value);
+        this.message = message;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalContent() {
         return additionalContent;

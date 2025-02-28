@@ -2,6 +2,7 @@ package com.kuro.expensetracker.services.user;
 
 import com.kuro.expensetracker.auth.JwtService;
 import com.kuro.expensetracker.exceptions.AccountAlreadyActivatedException;
+import com.kuro.expensetracker.exceptions.AccountNotActivatedException;
 import com.kuro.expensetracker.exceptions.ConfirmationEmailException;
 import com.kuro.expensetracker.exceptions.InvalidValueException;
 import com.kuro.expensetracker.models.ConfirmationEmailToken;
@@ -10,8 +11,8 @@ import com.kuro.expensetracker.models.User;
 import com.kuro.expensetracker.repositories.ConfirmationEmailTokenRepository;
 import com.kuro.expensetracker.repositories.OTPRepository;
 import com.kuro.expensetracker.repositories.UserRepository;
+import com.kuro.expensetracker.requests.OtpRequest;
 import com.kuro.expensetracker.requests.UserRequest;
-import com.kuro.expensetracker.requests.VerifyOtpRequest;
 import com.kuro.expensetracker.responses.AuthResponse;
 import com.kuro.expensetracker.utils.EmailValidator;
 import com.kuro.expensetracker.utils.PasswordValidator;
@@ -93,14 +94,37 @@ public class AuthenticationService implements IAuthenticationService {
 
     @Override
     public AuthResponse authenticate(UserRequest request)
-            throws BadCredentialsException, ConfirmationEmailException {
+            throws BadCredentialsException, MessagingException, AccountNotActivatedException {
         var user = getUserToAuthenticate(request);
 
         if (!user.getIsVerified()) {
-            throw new ConfirmationEmailException("Your account is not activated yet. " +
-                    "Please verify your email to continue or Request a new confirmation email.");
+            // We resend a new Confirmation email
+            user = resendConfirmationEmail(request, true);
+            throw new AccountNotActivatedException(user.getOtp().getSessionID());
         }
         return new AuthResponse(jwtService.generateToken(user), user);
+    }
+
+    @Override
+    public User resendConfirmationEmail(OtpRequest request)
+            throws BadCredentialsException, ConfirmationEmailException, MessagingException {
+        var otpOpt = otpRepository.findBySessionID(request.sessionID());
+        if (otpOpt.isPresent()) {
+            otpRepository.delete(otpOpt.get());
+            var user = userRepository.findByEmail(otpOpt.get().getEmail())
+                    .orElseThrow(() ->
+                            new BadCredentialsException("Invalid OTP"));
+
+            if (user.getIsVerified()) {
+                throw new AccountAlreadyActivatedException(user.getUuid());
+            }
+
+            var otp = generateOTP(user);
+            emailService.sendConfirmationEmail(otp, user);
+            user.setOtp(otp);
+            return user;
+        }
+        throw new ConfirmationEmailException("Invalid OTP");
     }
 
     @Override
@@ -126,7 +150,6 @@ public class AuthenticationService implements IAuthenticationService {
         }
         return user;
     }
-
 
     @Override
     public void confirmEmail(String token) throws ConfirmationEmailException {
@@ -158,7 +181,7 @@ public class AuthenticationService implements IAuthenticationService {
     }
 
     @Override
-    public void verifyOTP(VerifyOtpRequest otpRequest)
+    public void verifyOTP(OtpRequest otpRequest)
             throws ConfirmationEmailException, InvalidValueException {
         Optional<OTP> otpOpt;
         if (otpRequest.sessionID() != null) {

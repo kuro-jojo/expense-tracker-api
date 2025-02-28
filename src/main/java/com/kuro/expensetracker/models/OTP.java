@@ -20,7 +20,7 @@ public class OTP {
     @Column(nullable = false)
     private String otp;
     private LocalDateTime expiration;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String sessionID;
     @Column(nullable = false)
     private String email;

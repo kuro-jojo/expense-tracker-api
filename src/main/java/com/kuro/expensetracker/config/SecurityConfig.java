@@ -47,6 +47,7 @@ public class SecurityConfig {
                             authorize.requestMatchers(apiPrefix + "/auth/confirm-email").permitAll();
                             authorize.requestMatchers(apiPrefix + "/auth/verify-otp").permitAll();
                             authorize.requestMatchers(apiPrefix + "/auth/resend-confirmation-email").permitAll();
+                            authorize.requestMatchers(apiPrefix + "/auth/resend-confirmation-email-link").permitAll();
                             authorize.anyRequest().authenticated();
                         })
                 .formLogin(AbstractHttpConfigurer::disable)

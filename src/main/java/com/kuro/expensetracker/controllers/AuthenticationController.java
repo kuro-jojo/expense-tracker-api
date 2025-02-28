@@ -1,9 +1,10 @@
 package com.kuro.expensetracker.controllers;
 
+import com.kuro.expensetracker.exceptions.AccountNotActivatedException;
 import com.kuro.expensetracker.exceptions.ConfirmationEmailException;
 import com.kuro.expensetracker.exceptions.UserAlreadyPresentException;
+import com.kuro.expensetracker.requests.OtpRequest;
 import com.kuro.expensetracker.requests.UserRequest;
-import com.kuro.expensetracker.requests.VerifyOtpRequest;
 import com.kuro.expensetracker.responses.ApiResponse;
 import com.kuro.expensetracker.responses.AuthResponse;
 import com.kuro.expensetracker.services.user.AuthenticationService;
@@ -24,7 +25,8 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserRequest request) throws ConfirmationEmailException {
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserRequest request)
+            throws AccountNotActivatedException, MessagingException {
         AuthResponse authenticatedUser = authenticationService.authenticate(request);
         ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
         response.addContent("token", authenticatedUser.token());
@@ -62,19 +64,14 @@ public class AuthenticationController {
         }
     }
 
-    @PostMapping("/resend-confirmation-email")
-    public ResponseEntity<ApiResponse> resendConfirmationEmail(
-            @Valid @RequestBody UserRequest request,
-            @RequestParam(required = false, defaultValue = "true") boolean byOTP
+    @PostMapping("/resend-confirmation-email-link")
+    public ResponseEntity<ApiResponse> resendConfirmationEmailWithLink(
+            @Valid @RequestBody UserRequest request
     ) throws ConfirmationEmailException, MessagingException {
-        var user = authenticationService.resendConfirmationEmail(request, byOTP);
+        var user = authenticationService.resendConfirmationEmail(request, false);
 
         ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
-        response.setMessage("Email resent to " + request.getEmail());
-
-        if (byOTP) {
-            response.addContent("sessionID", user.getOtp().getSessionID());
-        }
+        response.setMessage("Email resent to " + user.getEmail());
 
         log.atInfo()
                 .log("[UUID={}] Confirmation link resent to the user successfully", user.getUuid());
@@ -82,24 +79,44 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    // Used for OTP verification
+    @PostMapping("/resend-confirmation-email")
+    public ResponseEntity<ApiResponse> resendConfirmationEmail(
+            @Valid @RequestBody OtpRequest request
+    ) throws ConfirmationEmailException, MessagingException {
+        var user = authenticationService.resendConfirmationEmail(request);
+
+        ApiResponse response = new ApiResponse(true, HttpStatus.OK.value());
+        response.setMessage("Email resent to " + user.getEmail());
+        response.addContent("sessionID", user.getOtp().getSessionID());
+
+        log.atInfo()
+                .log("[UUID={}] Confirmation OTP resent to the user successfully", user.getUuid());
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @GetMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestParam String token)
+    public ResponseEntity<ApiResponse> confirmEmail(@RequestParam String token)
             throws ConfirmationEmailException {
         authenticationService.confirmEmail(token);
 
         log.atInfo()
                 .log("User email verified successfully");
 
-        return ResponseEntity.ok("Your email has been successfully verified.");
+        var response = new ApiResponse(true, 200);
+        response.setMessage("Your email has been successfully verified.");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOTP(@RequestBody VerifyOtpRequest otpRequest)
+    public ResponseEntity<ApiResponse> verifyOTP(@RequestBody OtpRequest otpRequest)
             throws ConfirmationEmailException {
         authenticationService.verifyOTP(otpRequest);
         log.atInfo()
-                .log("User email verified successfully");
-
-        return ResponseEntity.ok("Your email has been successfully verified.");
+                .log("");
+        var response = new ApiResponse(true, 200);
+        response.setMessage("User email verified successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

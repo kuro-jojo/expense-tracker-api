@@ -1,5 +1,6 @@
 package com.kuro.expensetracker.exceptions;
 
+import com.kuro.expensetracker.responses.ApiResponse;
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -69,11 +70,22 @@ public class GlobalExceptionHandler {
         return errorDetail;
     }
 
+    @ExceptionHandler(AccountNotActivatedException.class)
+    public ProblemDetail handleAccountNotActivatedException(AccountNotActivatedException exception) {
+        log.error("[AccountNotActivatedException] Failed to authenticated: {}", exception.getMessage());
+        ProblemDetail errorDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "Email not verified");
+        errorDetail.setProperty("message", exception.getMessage());
+        errorDetail.setProperty("sessionID", exception.getSessionID());
+        errorDetail.setProperty("timestamp", Instant.now());
+        return errorDetail;
+    }
 
     @ExceptionHandler(AccountAlreadyActivatedException.class)
-    public String handleAccountAlreadyActivatedException(AccountAlreadyActivatedException exception) {
+    public ApiResponse handleAccountAlreadyActivatedException(AccountAlreadyActivatedException exception) {
         log.error("[AccountAlreadyActivatedException] User [{}] account already activated", exception.getUuid());
-        return exception.getMessage();
+        return new ApiResponse(true, HttpStatus.OK.value(), "Account already activated!");
     }
 
     @ExceptionHandler(ConfirmationEmailException.class)
