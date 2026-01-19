@@ -2,6 +2,8 @@
 
 Backend API for the Expense Tracker application written in Java Spring Boot.
 
+The Python API that allow automatic transaction categorization can be found here : https://github.com/kuro-jojo/bert-transaction-categorizer-api
+
 ## Table of Contents
 
 - [Introduction](#introduction)
